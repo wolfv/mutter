@@ -186,8 +186,11 @@ get_masked_pipeline (CoglContext *ctx)
   if (G_UNLIKELY (template == NULL))
     {
       template = cogl_pipeline_new (ctx);
-      cogl_pipeline_set_layer_combine (template, 1,
+      cogl_pipeline_set_layer_combine (template, 2,
                                        "RGBA = MODULATE (PREVIOUS, TEXTURE[A])",
+                                       NULL);
+      cogl_pipeline_set_layer_combine (template, 1,
+                                       "RGBA = ADD (PREVIOUS, TEXTURE)",
                                        NULL);
     }
 
@@ -454,8 +457,8 @@ meta_shaped_texture_paint (ClutterActor *actor)
       else
         {
           blended_pipeline = get_masked_pipeline (ctx);
-          cogl_pipeline_set_layer_texture (blended_pipeline, 1, priv->mask_texture);
-          cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
+          cogl_pipeline_set_layer_texture (blended_pipeline, 2, priv->mask_texture);
+          cogl_pipeline_set_layer_filters (blended_pipeline, 2, filter, filter);
           // guchar * pixels;
           // pixels = g_malloc0((alloc.x2 - alloc.x1) * (alloc.y2 - alloc.y1) * 3);
           // cogl_read_pixels(alloc.x1, alloc.y1, alloc.x2, alloc.y2, 
@@ -481,8 +484,8 @@ meta_shaped_texture_paint (ClutterActor *actor)
           // cogl_pipeline_set_layer_texture (blended_pipeline, 2, blur_texture);
       }
 
-      cogl_pipeline_set_layer_texture (blended_pipeline, 0, paint_tex);
-      cogl_pipeline_set_layer_filters (blended_pipeline, 0, filter, filter);
+      cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
+      cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
 
       CoglColor color;
       cogl_color_init_from_4ub (&color, opacity, opacity, opacity, opacity);
@@ -519,15 +522,16 @@ meta_shaped_texture_paint (ClutterActor *actor)
                 rect.x,
                 rect.y,
                 rect.width,
-                rect.height
+                rect.height,
                 0,
                 NULL
               );
               clutter_actor_set_content(blur_actor, (blur_bg_image));
               clutter_actor_add_effect(blur_actor, blur_effect);
+              // CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
               
-              CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
-              cogl_pipeline_set_layer_texture (blended_pipeline, 2, blur_texture);
+              CoglTexture * blur_texture = clutter_offscreen_effect_get_texture(blur_effect);
+              cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
 
               paint_clipped_rectangle (fb, blended_pipeline, &rect, &alloc);
             }
