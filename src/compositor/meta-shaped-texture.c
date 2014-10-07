@@ -349,6 +349,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
   ctx = clutter_backend_get_cogl_context (clutter_get_default_backend ());
   fb = cogl_get_draw_framebuffer ();
 
+
   opacity = clutter_actor_get_paint_opacity (actor);
   clutter_actor_get_allocation_box (actor, &alloc);
 
@@ -441,6 +442,11 @@ meta_shaped_texture_paint (ClutterActor *actor)
     {
       CoglPipeline *blended_pipeline;
 
+       // cogl_read_pixels (0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
+       //  COGL_READ_PIXELS_COLOR_BUFFER,
+       //  COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+       //  (guchar *)pixels);
+
       if (priv->mask_texture == NULL)
         {
           blended_pipeline = get_unmasked_pipeline (ctx);
@@ -451,13 +457,34 @@ meta_shaped_texture_paint (ClutterActor *actor)
           cogl_pipeline_set_layer_texture (blended_pipeline, 1, priv->mask_texture);
           cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
         }
-
-      cogl_pipeline_set_layer_texture (blended_pipeline, 0, paint_tex);
+      cogl_read_pixels(alloc.x1, alloc.y1, alloc.x2, alloc.y2, 
+        COGL_READ_PIXELS_COLOR_BUFFER,
+        COGL_PIXEL_FORMAT_RGB_888, 
+         (guchar *)pixels);
+      ClutterActor * blur_actor = clutter_actor_new();
+      ClutterContent * blur_bg_image = clutter_image_new();
+      ClutterEffect * blur_effect = clutter_blur_effect_new();
+      clutter_image_set_data(
+        blur_bg_image,
+        pixels,
+        COGL_PIXEL_FORMAT_RGB_888,
+        alloc.x2 - alloc.x1,
+        allox.y2 - alloc.y1,
+        1,
+        NULL
+      );
+      clutter_actor_set_content(blur_actor, blur_bg_image);
+      CoglTexture * blur_texture = clutter_actor_add_effect(blur_actor, blur_effect);
+      
+      cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
+      cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 0, filter, filter);
 
       CoglColor color;
       cogl_color_init_from_4ub (&color, opacity, opacity, opacity, opacity);
       cogl_pipeline_set_color (blended_pipeline, &color);
+      guchar * pixels;
+
 
       if (blended_region != NULL)
         {
@@ -760,6 +787,64 @@ meta_shaped_texture_set_opaque_region (MetaShapedTexture *stex,
     priv->opaque_region = cairo_region_reference (opaque_region);
   else
     priv->opaque_region = NULL;
+}
+
+void cairo_image_surface_blur( cairo_surface_t* surface, double radius )
+{
+    // Steve Hanov, 2009
+    // Released into the public domain.
+    
+    // get width, height
+    int width = cairo_image_surface_get_width( surface );
+    int height = cairo_image_surface_get_height( surface );
+    unsigned char* dst = (unsigned char*)malloc(width*height*4);
+    unsigned* precalc = 
+        (unsigned*)malloc(width*height*sizeof(unsigned));
+    unsigned char* src = cairo_image_surface_get_data( surface );
+    double mul=1.f/((radius*2)*(radius*2));
+    int channel;
+    
+    // The number of times to perform the averaging. According to wikipedia,
+    // three iterations is good enough to pass for a gaussian.
+    const MAX_ITERATIONS = 3; 
+    int iteration;
+
+    memcpy( dst, src, width*height*4 );
+
+    for ( iteration = 0; iteration < MAX_ITERATIONS; iteration++ ) {
+        for( channel = 0; channel < 4; channel++ ) {
+            int x,y;
+
+            // precomputation step.
+            unsigned char* pix = src;
+            unsigned* pre = precalc;
+
+            pix += channel;
+            for (y=0;y0) tot+=pre[-1];
+                    if (y>0) tot+=pre[-width];
+                    if (x>0 && y>0) tot-=pre[-width-1];
+                    *pre++=tot;
+                    pix += 4;
+                }
+            }
+
+            // blur step.
+            pix = dst + (int)radius * width * 4 + (int)radius * 4 + channel;
+            for (y=radius;y= width ? width - 1 : x + radius;
+                    int b = y + radius >= height ? height - 1 : y + radius;
+                    int tot = precalc[r+b*width] + precalc[l+t*width] - 
+                        precalc[l+b*width] - precalc[r+t*width];
+                    *pix=(unsigned char)(tot*mul);
+                    pix += 4;
+                }
+                pix += (int)radius * 2 * 4;
+            }
+        }
+        memcpy( src, dst, width*height*4 );
+    }
+
+    free( dst );
+    free( precalc );
 }
 
 /**
