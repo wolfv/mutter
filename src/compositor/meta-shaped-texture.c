@@ -479,7 +479,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
       clutter_actor_add_effect(blur_actor, blur_effect);
       
       CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
-      cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
+      // cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
       cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
 
