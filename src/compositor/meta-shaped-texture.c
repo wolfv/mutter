@@ -457,28 +457,28 @@ meta_shaped_texture_paint (ClutterActor *actor)
           cogl_pipeline_set_layer_texture (blended_pipeline, 2, priv->mask_texture);
           cogl_pipeline_set_layer_filters (blended_pipeline, 2, filter, filter);
         }
-      guchar * pixels;
-      pixels = g_malloc0((alloc.x2 - alloc.x1) * (alloc.y2 - alloc.y1) * 3);
-      cogl_read_pixels(alloc.x1, alloc.y1, alloc.x2, alloc.y2, 
-        COGL_READ_PIXELS_COLOR_BUFFER,
-        COGL_PIXEL_FORMAT_RGB_888, 
-         (guchar *)pixels);
-      ClutterActor * blur_actor = clutter_actor_new();
-      ClutterContent * blur_bg_image = clutter_image_new();
-      ClutterEffect * blur_effect = clutter_blur_effect_new();
-      clutter_image_set_data(
-        CLUTTER_IMAGE(blur_bg_image),
-        pixels,
-        COGL_PIXEL_FORMAT_RGB_888,
-        alloc.x2 - alloc.x1,
-        alloc.y2 - alloc.y1,
-        0,
-        NULL
-      );
-      clutter_actor_set_content(blur_actor, (blur_bg_image));
-      clutter_actor_add_effect(blur_actor, blur_effect);
+      // guchar * pixels;
+      // pixels = g_malloc0((alloc.x2 - alloc.x1) * (alloc.y2 - alloc.y1) * 3);
+      // cogl_read_pixels(alloc.x1, alloc.y1, alloc.x2, alloc.y2, 
+      //   COGL_READ_PIXELS_COLOR_BUFFER,
+      //   COGL_PIXEL_FORMAT_RGB_888, 
+      //    (guchar *)pixels);
+      // ClutterActor * blur_actor = clutter_actor_new();
+      // ClutterContent * blur_bg_image = clutter_image_new();
+      // ClutterEffect * blur_effect = clutter_blur_effect_new();
+      // clutter_image_set_data(
+      //   CLUTTER_IMAGE(blur_bg_image),
+      //   pixels,
+      //   COGL_PIXEL_FORMAT_RGB_888,
+      //   alloc.x2 - alloc.x1,
+      //   alloc.y2 - alloc.y1,
+      //   0,
+      //   NULL
+      // );
+      // clutter_actor_set_content(blur_actor, (blur_bg_image));
+      // clutter_actor_add_effect(blur_actor, blur_effect);
       
-      CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
+      // CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
       // cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
       cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
