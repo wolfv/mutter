@@ -38,6 +38,7 @@
 
 #include "meta-cullable.h"
 
+
 static void meta_shaped_texture_dispose  (GObject    *object);
 
 static void meta_shaped_texture_paint (ClutterActor       *actor);
@@ -78,7 +79,6 @@ struct _MetaShapedTexturePrivate
   CoglTexture *texture;
   CoglTexture *blur_texture;
   CoglTexture *mask_texture;
-
   /* The region containing only fully opaque pixels */
   cairo_region_t *opaque_region;
 
@@ -89,7 +89,168 @@ struct _MetaShapedTexturePrivate
   guint tex_width, tex_height;
 
   guint create_mipmaps : 1;
+
+// stuff for shader:
+  CoglShader  *shader;
+
+  gfloat tex_width;
+  gfloat tex_height;
+
+  CoglHandle shader;
+  CoglHandle program;
+
+  CoglPipeline * base_pipeline;
+
+  gint tex_uniform;
+  gint x_step_uniform;
+  gint y_step_uniform;
+
+  guint is_compiled : 1;
+
 };
+
+static const gchar *box_blur_glsl_declarations =
+"uniform vec2 pixel_step;\n";
+#define SAMPLE(offx, offy) \
+"cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
+"vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
+static const gchar *box_blur_glsl_shader =
+" cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
+SAMPLE (-1.0, -1.0)
+SAMPLE ( 0.0, -1.0)
+SAMPLE (+1.0, -1.0)
+SAMPLE (-1.0, 0.0)
+SAMPLE (+1.0, 0.0)
+SAMPLE (-1.0, +1.0)
+SAMPLE ( 0.0, +1.0)
+SAMPLE (+1.0, +1.0)
+" cogl_texel /= 9.0;\n";
+#undef SAMPLE
+\\"
+
+
+static gboolean
+blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
+{
+  // ClutterOffscreenEffect *offscreen_effect =
+  //   CLUTTER_OFFSCREEN_EFFECT (effect);
+
+  // texture = clutter_offscreen_effect_get_texture (offscreen_effect);
+  self->tex_width = cogl_texture_get_width (texture);
+  self->tex_height = cogl_texture_get_height (texture);
+
+  if (self->pixel_step_uniform > -1)
+    {
+      gfloat pixel_step[2];
+
+      pixel_step[0] = 1.0f / self->tex_width;
+      pixel_step[1] = 1.0f / self->tex_height;
+
+      cogl_pipeline_set_uniform_float (self->base_pipeline,
+                                       self->pixel_step_uniform,
+                                       2, /* n_components */
+                                       1, /* count */
+                                       pixel_step);
+    }
+
+  cogl_pipeline_set_layer_texture (self->base_pipeline, 0, texture);
+
+  return TRUE;
+}
+
+static void
+blur_effect_paint_target (MetaShapedTexture * self)
+{
+  guint8 paint_opacity;
+
+  paint_opacity = 255;
+
+  cogl_pipeline_set_color4ub (self->base_pipeline,
+                              paint_opacity,
+                              paint_opacity,
+                              paint_opacity,
+                              paint_opacity);
+  cogl_push_source (self->base_pipeline);
+
+  cogl_rectangle (0, 0, self->tex_width, self->tex_height);
+
+  cogl_pop_source ();
+}
+
+static void
+blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pipeline)
+{
+  // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
+  CoglSnippet *snippet;
+
+  CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
+  self->base_pipeline = base_pipeline;
+  snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+                              box_blur_glsl_declarations,
+                              NULL);
+  cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
+  cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
+  cogl_object_unref (snippet);
+
+  cogl_pipeline_set_layer_null_texture (self->base_pipeline,
+                                        0, /* layer number */
+                                        COGL_TEXTURE_TYPE_2D);
+
+  self->pixel_step_uniform =
+    cogl_pipeline_get_uniform_location (self->pipeline, "pixel_step");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 static void
 meta_shaped_texture_class_init (MetaShapedTextureClass *klass)
@@ -230,6 +391,10 @@ static CoglTexture * add_background_blur(CoglFramebuffer *fb, CoglPipeline *blen
     COGL_TEXTURE_NONE,
     COGL_PIXEL_FORMAT_RGBA_8888,
     NULL);
+
+  blur_effect_init(self, ctx, blended_pipeline);
+  blur_effect_pre_paint(blur_texture);
+  blur_effect_paint_target();
 
   // ClutterActor * blur_actor = clutter_actor_new();
   // ClutterContent * blur_bg_image = clutter_image_new();
