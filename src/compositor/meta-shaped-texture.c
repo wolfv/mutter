@@ -86,8 +86,6 @@ struct _MetaShapedTexturePrivate
   cairo_region_t *clip_region;
   cairo_region_t *unobscured_region;
 
-  guint tex_width, tex_height;
-
   guint create_mipmaps : 1;
 
 // stuff for shader:
@@ -135,26 +133,28 @@ blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 {
   // ClutterOffscreenEffect *offscreen_effect =
   //   CLUTTER_OFFSCREEN_EFFECT (effect);
+  MetaShapedTexturePrivate * priv = self->priv;
+
 
   // texture = clutter_offscreen_effect_get_texture (offscreen_effect);
-  self->tex_width = cogl_texture_get_width (texture);
-  self->tex_height = cogl_texture_get_height (texture);
+  priv->tex_width = cogl_texture_get_width (texture);
+  priv->tex_height = cogl_texture_get_height (texture);
 
-  if (self->pixel_step_uniform > -1)
+  if (priv->pixel_step_uniform > -1)
     {
       gfloat pixel_step[2];
 
-      pixel_step[0] = 1.0f / self->tex_width;
-      pixel_step[1] = 1.0f / self->tex_height;
+      pixel_step[0] = 1.0f / priv->tex_width;
+      pixel_step[1] = 1.0f / priv->tex_height;
 
-      cogl_pipeline_set_uniform_float (self->base_pipeline,
-                                       self->pixel_step_uniform,
+      cogl_pipeline_set_uniform_float (priv->base_pipeline,
+                                       priv->pixel_step_uniform,
                                        2, /* n_components */
                                        1, /* count */
                                        pixel_step);
     }
 
-  cogl_pipeline_set_layer_texture (self->base_pipeline, 0, texture);
+  cogl_pipeline_set_layer_texture (priv->base_pipeline, 0, texture);
 
   return TRUE;
 }
@@ -162,18 +162,20 @@ blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 static void
 blur_effect_paint_target (MetaShapedTexture * self)
 {
+  MetaShapedTexturePrivate * priv = self->priv;
+
   guint8 paint_opacity;
 
   paint_opacity = 255;
 
-  cogl_pipeline_set_color4ub (self->base_pipeline,
+  cogl_pipeline_set_color4ub (priv->base_pipeline,
                               paint_opacity,
                               paint_opacity,
                               paint_opacity,
                               paint_opacity);
-  cogl_push_source (self->base_pipeline);
+  cogl_push_source (priv->base_pipeline);
 
-  cogl_rectangle (0, 0, self->tex_width, self->tex_height);
+  cogl_rectangle (0, 0, priv->tex_width, priv->tex_height);
 
   cogl_pop_source ();
 }
@@ -183,9 +185,9 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pip
 {
   // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
   CoglSnippet *snippet;
-
+  MetaShapedTexturePrivate * priv = self->priv;
   CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
-  self->base_pipeline = base_pipeline;
+  priv->base_pipeline = base_pipeline;
   snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                               box_blur_glsl_declarations,
                               NULL);
@@ -193,12 +195,12 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pip
   cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
   cogl_object_unref (snippet);
 
-  cogl_pipeline_set_layer_null_texture (self->base_pipeline,
+  cogl_pipeline_set_layer_null_texture (priv->base_pipeline,
                                         0, /* layer number */
                                         COGL_TEXTURE_TYPE_2D);
 
-  self->pixel_step_uniform =
-    cogl_pipeline_get_uniform_location (self->base_pipeline, "pixel_step");
+  priv->pixel_step_uniform =
+    cogl_pipeline_get_uniform_location (priv->base_pipeline, "pixel_step");
 }
 
 
@@ -396,8 +398,8 @@ static CoglTexture * add_background_blur(
     NULL);
 
   blur_effect_init(self, ctx, blended_pipeline);
-  blur_effect_pre_paint(blur_texture);
-  blur_effect_paint_target();
+  blur_effect_pre_paint(self, blur_texture);
+  blur_effect_paint_target(self);
 
   // ClutterActor * blur_actor = clutter_actor_new();
   // ClutterContent * blur_bg_image = clutter_image_new();
