@@ -673,7 +673,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
       cogl_pipeline_set_layer_texture (blended_pipeline, 0, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 0, filter, filter);
 
-      add_background_blur(stex, ctx, NULL, fb);
+      add_background_blur(stex, ctx, fb);
       // cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
 
 
