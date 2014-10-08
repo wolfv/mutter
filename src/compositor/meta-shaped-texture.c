@@ -348,10 +348,10 @@ get_masked_pipeline (CoglContext *ctx)
   if (G_UNLIKELY (template == NULL))
     {
       template = cogl_pipeline_new (ctx);
+      // cogl_pipeline_set_layer_combine (template, 1,
+      //                                  "RGBA = ADD (PREVIOUS, TEXTURE)",
+      //                                  NULL);
       cogl_pipeline_set_layer_combine (template, 1,
-                                       "RGBA = ADD (PREVIOUS, TEXTURE)",
-                                       NULL);
-      cogl_pipeline_set_layer_combine (template, 2,
                                        "RGBA = MODULATE (PREVIOUS, TEXTURE[A])",
                                        NULL);
     }
@@ -666,12 +666,12 @@ meta_shaped_texture_paint (ClutterActor *actor)
       else
         {
           blended_pipeline = get_masked_pipeline (ctx);
-          cogl_pipeline_set_layer_texture (blended_pipeline, 2, priv->mask_texture);
-          cogl_pipeline_set_layer_filters (blended_pipeline, 2, filter, filter);
+          cogl_pipeline_set_layer_texture (blended_pipeline, 1, priv->mask_texture);
+          cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
       }
 
-      cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
-      cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
+      cogl_pipeline_set_layer_texture (blended_pipeline, 0, paint_tex);
+      cogl_pipeline_set_layer_filters (blended_pipeline, 0, filter, filter);
 
       add_background_blur(stex, ctx, blended_pipeline, fb);
       // cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
