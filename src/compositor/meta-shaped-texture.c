@@ -137,19 +137,19 @@ blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
   priv->tex_width = cogl_texture_get_width (texture);
   priv->tex_height = cogl_texture_get_height (texture);
 
-  // if (priv->pixel_step_uniform > -1)
-  //   {
-  //     gfloat pixel_step[2];
+  if (priv->pixel_step_uniform > -1)
+    {
+      gfloat pixel_step[2];
 
-  //     pixel_step[0] = 1.0f / priv->tex_width;
-  //     pixel_step[1] = 1.0f / priv->tex_height;
+      pixel_step[0] = 1.0f / priv->tex_width;
+      pixel_step[1] = 1.0f / priv->tex_height;
 
-  //     cogl_pipeline_set_uniform_float (priv->base_pipeline,
-  //                                      priv->pixel_step_uniform,
-  //                                      2, /* n_components */
-  //                                      1, /* count */
-  //                                      pixel_step);
-  //   }
+      cogl_pipeline_set_uniform_float (priv->base_pipeline,
+                                       priv->pixel_step_uniform,
+                                       2, /* n_components */
+                                       1, /* count */
+                                       pixel_step);
+    }
 
   cogl_pipeline_set_layer_texture (priv->base_pipeline, 0, texture);
 
@@ -163,7 +163,7 @@ blur_effect_paint_target (MetaShapedTexture * self)
 
   guint8 paint_opacity;
 
-  paint_opacity = 255;
+  paint_opacity = 200;
 
   cogl_pipeline_set_color4ub (priv->base_pipeline,
                               paint_opacity,
@@ -185,12 +185,12 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pip
   MetaShapedTexturePrivate * priv = self->priv;
   CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
   priv->base_pipeline = base_pipeline;
-  // snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
-  //                             box_blur_glsl_declarations,
-  //                             NULL);
-  // cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
-  // cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
-  // cogl_object_unref (snippet);
+  snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+                              box_blur_glsl_declarations,
+                              NULL);
+  cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
+  cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
+  cogl_object_unref (snippet);
 
   cogl_pipeline_set_layer_null_texture (priv->base_pipeline,
                                         0, /* layer number */
