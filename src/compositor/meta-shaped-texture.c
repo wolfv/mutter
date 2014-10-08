@@ -377,7 +377,7 @@ get_unblended_pipeline (CoglContext *ctx)
   return cogl_pipeline_copy (template);
 }
 
-static CoglTexture * add_background_blur(
+static void add_background_blur(
   MetaShapedTexture * self, CoglContext * ctx,
   CoglFramebuffer *fb, CoglPipeline *blended_pipeline) {
   // guchar * pixels;
@@ -419,7 +419,7 @@ static CoglTexture * add_background_blur(
   // CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
   
   // CoglTexture * blur_texture = clutter_offscreen_effect_get_texture(blur_effect);
-  return blur_texture;
+  // return blur_texture;
 }
 
 static void
@@ -673,7 +673,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
       cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
 
-      CoglTexture * blur_texture = add_background_blur(stex, ctx, blended_pipeline, fb);
+      add_background_blur(stex, ctx, blended_pipeline, fb);
       cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
 
 
