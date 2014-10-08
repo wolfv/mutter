@@ -89,7 +89,6 @@ struct _MetaShapedTexturePrivate
   guint create_mipmaps : 1;
 
 // stuff for shader:
-  CoglShader  *shader;
 
   gfloat tex_width;
   gfloat tex_height;
