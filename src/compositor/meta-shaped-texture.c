@@ -90,17 +90,15 @@ struct _MetaShapedTexturePrivate
 
 // stuff for shader:
 
-  gfloat tex_width;
-  gfloat tex_height;
+  gint pixel_step_uniform;
+
+  gint tex_width;
+  gint tex_height;
 
   CoglHandle shader;
   CoglHandle program;
 
   CoglPipeline * base_pipeline;
-
-  gint tex_uniform;
-  gint x_step_uniform;
-  gint y_step_uniform;
 
   guint is_compiled : 1;
 
