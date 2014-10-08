@@ -126,10 +126,11 @@ SAMPLE ( 0.0, +1.0)
 SAMPLE (+1.0, +1.0)
 " cogl_texel /= 9.0;\n";
 #undef SAMPLE
-\\"
 
 
-static gboolean
+
+
+static gboolean // "
 blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 {
   // ClutterOffscreenEffect *offscreen_effect =
