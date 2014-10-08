@@ -138,8 +138,6 @@ blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
   // texture = clutter_offscreen_effect_get_texture (offscreen_effect);
   priv->blur_tex_width = cogl_texture_get_width (texture);
   priv->blur_tex_height = cogl_texture_get_height (texture);
-  priv->blur_tex_width = 200;
-  priv->blur_tex_height = 200;
 
   gfloat pixel_step[2];
 
@@ -381,13 +379,26 @@ get_unblended_pipeline (CoglContext *ctx)
 static void add_background_blur(
   MetaShapedTexture * self, CoglContext * ctx,
   CoglFramebuffer *fb) {
-  // guchar * pixels;
-  // pixels = g_malloc0(rect.height * rect.width * 3);
 
-  // cogl_read_pixels(alloc.x1, alloc.y1, alloc.x2, alloc.y2, 
-  //   COGL_READ_PIXELS_COLOR_BUFFER,
-  //   COGL_PIXEL_FORMAT_RGB_888, 
-  //    (guchar *)pixels);
+  coords[0] = rect->x / (alloc->x2 - alloc->x1);
+  coords[1] = rect->y / (alloc->y2 - alloc->y1);
+  coords[2] = (rect->x + rect->width) / (alloc->x2 - alloc->x1);
+  coords[3] = (rect->y + rect->height) / (alloc->y2 - alloc->y1);
+
+  gint width = coords[2] - coords[0];
+  gint height = coords[3] - coords[1];
+
+  guchar * pixels;
+  pixels = g_malloc0(width * height * 4);
+
+  cogl_read_pixels(
+    coords[0], 
+    coords[1], 
+    coords[2], 
+    coords[3], 
+    COGL_READ_PIXELS_COLOR_BUFFER,
+    COGL_PIXEL_FORMAT_RGBA_8888, 
+    (guchar *) pixels);
 
   CoglTexture * blur_texture = cogl_texture_new_from_file(
     "/home/wolf/mutter/src/test.png",
