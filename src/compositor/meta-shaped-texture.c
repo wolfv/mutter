@@ -183,18 +183,20 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pip
   // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
   CoglSnippet *snippet;
   MetaShapedTexturePrivate * priv = self->priv;
-  CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
-  priv->base_pipeline = base_pipeline;
-  snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
-                              box_blur_glsl_declarations,
-                              NULL);
-  cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
-  cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
-  cogl_object_unref (snippet);
+  if(!priv->base_pipeline) {
+    CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
+    priv->base_pipeline = base_pipeline;
+    snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+                                box_blur_glsl_declarations,
+                                NULL);
+    cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
+    cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
+    cogl_object_unref (snippet);
 
-  cogl_pipeline_set_layer_null_texture (priv->base_pipeline,
-                                        0, /* layer number */
-                                        COGL_TEXTURE_TYPE_2D);
+    cogl_pipeline_set_layer_null_texture (priv->base_pipeline,
+                                          0, /* layer number */
+                                          COGL_TEXTURE_TYPE_2D);
+  }
 
   priv->pixel_step_uniform =
     cogl_pipeline_get_uniform_location (priv->base_pipeline, "pixel_step");
