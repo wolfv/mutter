@@ -349,7 +349,7 @@ get_masked_pipeline (CoglContext *ctx)
     {
       template = cogl_pipeline_new (ctx);
       cogl_pipeline_set_layer_combine (template, 1,
-                                       "RGBA = ADD (SRC_COLOR * (SRC_COLOR[A]), DST_COLOR * (1-SRC_COLOR[A]))",
+                                       "RGBA = ADD (PREVIOUS, TEXTURE)",
                                        NULL);
       cogl_pipeline_set_layer_combine (template, 2,
                                        "RGBA = MODULATE (PREVIOUS, TEXTURE[A])",
