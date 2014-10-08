@@ -216,16 +216,17 @@ get_unblended_pipeline (CoglContext *ctx)
   return cogl_pipeline_copy (template);
 }
 
-static void add_background_blur(CoglFramebuffer *fb, CoglPipeline *blended_pipeline) {
-  guchar * pixels;
-  pixels = g_malloc0(rect.height * rect.width * 3);
+static CoglTexture * add_background_blur(CoglFramebuffer *fb, CoglPipeline *blended_pipeline) {
+  // guchar * pixels;
+  // pixels = g_malloc0(rect.height * rect.width * 3);
 
   // cogl_read_pixels(alloc.x1, alloc.y1, alloc.x2, alloc.y2, 
   //   COGL_READ_PIXELS_COLOR_BUFFER,
   //   COGL_PIXEL_FORMAT_RGB_888, 
   //    (guchar *)pixels);
 
-  CoglTexture * blur_texture = cogl_texture_new_from_file("test.png",
+  CoglTexture * blur_texture = cogl_texture_new_from_file(
+    "/home/wolf/mutter/src/test.png",
     COGL_TEXTURE_NONE,
     COGL_PIXEL_FORMAT_RGBA_8888,
     NULL);
@@ -251,7 +252,7 @@ static void add_background_blur(CoglFramebuffer *fb, CoglPipeline *blended_pipel
   // CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
   
   // CoglTexture * blur_texture = clutter_offscreen_effect_get_texture(blur_effect);
-  cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
+  return blur_texture;
 }
 
 static void
@@ -504,8 +505,10 @@ meta_shaped_texture_paint (ClutterActor *actor)
 
       cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
-      
-      add_background_blur(blended_pipeline, fb);
+
+      CoglTexture * blur_texture = add_background_blur(blended_pipeline, fb);
+      cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
+
 
       CoglColor color;
       cogl_color_init_from_4ub (&color, opacity, opacity, opacity, opacity);
