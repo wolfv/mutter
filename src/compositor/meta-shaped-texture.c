@@ -124,7 +124,12 @@ static const gchar *box_blur_glsl_shader =
 "  cogl_texel /= 9.0;\n";
 #undef SAMPLE
 
+
 //"
+
+static CoglPipeline * base_pipeline;
+
+static gboolean
 blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 {
   // ClutterOffscreenEffect *offscreen_effect =
@@ -143,14 +148,14 @@ blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
       pixel_step[0] = 1.0f / priv->tex_width;
       pixel_step[1] = 1.0f / priv->tex_height;
 
-      cogl_pipeline_set_uniform_float (priv->base_pipeline,
+      cogl_pipeline_set_uniform_float (priv->pipeline,
                                        priv->pixel_step_uniform,
                                        2, /* n_components */
                                        1, /* count */
                                        pixel_step);
     }
 
-  cogl_pipeline_set_layer_texture (priv->base_pipeline, 0, texture);
+  cogl_pipeline_set_layer_texture (priv->pipeline, 0, texture);
 
   return TRUE;
 }
@@ -164,12 +169,12 @@ blur_effect_paint_target (MetaShapedTexture * self)
 
   paint_opacity = 200;
 
-  cogl_pipeline_set_color4ub (priv->base_pipeline,
+  cogl_pipeline_set_color4ub (priv->pipeline,
                               paint_opacity,
                               paint_opacity,
                               paint_opacity,
                               paint_opacity);
-  cogl_push_source (priv->base_pipeline);
+  cogl_push_source (priv->pipeline);
   cogl_rectangle (0, 0, 200, 200);
   cogl_pop_source ();
 }
@@ -180,24 +185,24 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx)
   // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
   CoglSnippet *snippet;
   MetaShapedTexturePrivate * priv = self->priv;
-  if(G_UNLIKELY (priv->base_pipeline == NULL)) {
-    CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
-    priv->base_pipeline = base_pipeline;
+  if(G_UNLIKELY (base_pipeline == NULL)) {
+    base_pipeline = cogl_pipeline_new (ctx);
+    base_pipeline = base_pipeline;
     snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_FRAGMENT,
                                 NULL,
                                 "cogl_color_out.rgb = "
                                 "vec3 (length (cogl_color_out.rgb) / 1.732);");
     // cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
-    cogl_pipeline_add_layer_snippet (priv->base_pipeline, 0, snippet);
+    cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
     cogl_object_unref (snippet);
 
-    cogl_pipeline_set_layer_null_texture (priv->base_pipeline,
+    cogl_pipeline_set_layer_null_texture (base_pipeline,
                                           0, /* layer number */
                                           COGL_TEXTURE_TYPE_2D);
   }
-
+  priv->pipeline = cogl_pipeline_copy(base_pipeline);
   priv->pixel_step_uniform =
-    cogl_pipeline_get_uniform_location (priv->base_pipeline, "pixel_step");
+    cogl_pipeline_get_uniform_location (base_pipeline, "pixel_step");
 }
 
 
