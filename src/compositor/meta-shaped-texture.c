@@ -197,7 +197,7 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pip
                                         COGL_TEXTURE_TYPE_2D);
 
   self->pixel_step_uniform =
-    cogl_pipeline_get_uniform_location (self->pipeline, "pixel_step");
+    cogl_pipeline_get_uniform_location (self->base_pipeline, "pixel_step");
 }
 
 
@@ -377,7 +377,9 @@ get_unblended_pipeline (CoglContext *ctx)
   return cogl_pipeline_copy (template);
 }
 
-static CoglTexture * add_background_blur(CoglFramebuffer *fb, CoglPipeline *blended_pipeline) {
+static CoglTexture * add_background_blur(
+  MetaShapedTexture * self, CoglContext * ctx,
+  CoglFramebuffer *fb, CoglPipeline *blended_pipeline) {
   // guchar * pixels;
   // pixels = g_malloc0(rect.height * rect.width * 3);
 
@@ -671,7 +673,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
       cogl_pipeline_set_layer_texture (blended_pipeline, 1, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
 
-      CoglTexture * blur_texture = add_background_blur(blended_pipeline, fb);
+      CoglTexture * blur_texture = add_background_blur(stex, ctx, blended_pipeline, fb);
       cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
 
 
