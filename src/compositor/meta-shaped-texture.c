@@ -172,7 +172,7 @@ blur_effect_paint_target (MetaShapedTexture * self)
                               paint_opacity);
   cogl_push_source (priv->base_pipeline);
 
-  cogl_rectangle (0, 0, priv->tex_width, priv->tex_height);
+  cogl_rectangle (0, 0, 200, 200);
   printf("Painting rectangle");
   cogl_pop_source ();
 }
@@ -183,7 +183,7 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pip
   // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
   CoglSnippet *snippet;
   MetaShapedTexturePrivate * priv = self->priv;
-  if(!priv->base_pipeline) {
+  if(G_UNLIKELY (priv->base_pipeline == NULL)) {
     CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
     priv->base_pipeline = base_pipeline;
     snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
