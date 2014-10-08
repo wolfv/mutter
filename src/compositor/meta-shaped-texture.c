@@ -123,9 +123,6 @@ SAMPLE (+1.0, +1.0)
 #undef SAMPLE
 
 
-
-
-static gboolean // "
 blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 {
   // ClutterOffscreenEffect *offscreen_effect =
@@ -176,7 +173,7 @@ blur_effect_paint_target (MetaShapedTexture * self)
 }
 
 static void
-blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pipeline)
+blur_effect_init (MetaShapedTexture *self, CoglContext * ctx)
 {
   // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
   CoglSnippet *snippet;
@@ -379,7 +376,7 @@ get_unblended_pipeline (CoglContext *ctx)
 
 static void add_background_blur(
   MetaShapedTexture * self, CoglContext * ctx,
-  CoglFramebuffer *fb, CoglPipeline *blended_pipeline) {
+  CoglFramebuffer *fb) {
   // guchar * pixels;
   // pixels = g_malloc0(rect.height * rect.width * 3);
 
@@ -394,7 +391,7 @@ static void add_background_blur(
     COGL_PIXEL_FORMAT_RGBA_8888_PRE,
     NULL);
 
-  blur_effect_init(self, ctx, blended_pipeline);
+  blur_effect_init(self, ctx);
   blur_effect_pre_paint(self, blur_texture);
   blur_effect_paint_target(self);
 
@@ -673,7 +670,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
       cogl_pipeline_set_layer_texture (blended_pipeline, 0, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 0, filter, filter);
 
-      add_background_blur(stex, ctx, blended_pipeline, fb);
+      add_background_blur(stex, ctx, NULL, fb);
       // cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
 
 
