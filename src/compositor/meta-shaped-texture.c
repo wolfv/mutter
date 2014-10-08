@@ -171,9 +171,7 @@ blur_effect_paint_target (MetaShapedTexture * self)
                               paint_opacity,
                               paint_opacity);
   cogl_push_source (priv->base_pipeline);
-
   cogl_rectangle (0, 0, 200, 200);
-  printf("Painting rectangle");
   cogl_pop_source ();
 }
 
@@ -190,7 +188,7 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx, CoglPipeline * pip
                                 box_blur_glsl_declarations,
                                 NULL);
     cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
-    cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
+    cogl_pipeline_add_layer_snippet (priv->base_pipeline, 0, snippet);
     cogl_object_unref (snippet);
 
     cogl_pipeline_set_layer_null_texture (priv->base_pipeline,
