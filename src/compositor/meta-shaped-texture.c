@@ -456,7 +456,7 @@ set_cogl_texture (MetaShapedTexture *stex,
                   CoglTexture       *cogl_tex)
 {
   MetaShapedTexturePrivate *priv;
-  guint width, height;
+  gint width, height;
 
   g_return_if_fail (META_IS_SHAPED_TEXTURE (stex));
 
