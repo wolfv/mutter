@@ -378,7 +378,8 @@ get_unblended_pipeline (CoglContext *ctx)
 
 static void add_background_blur(
   MetaShapedTexture * self, CoglContext * ctx,
-  CoglFramebuffer *fb) {
+  CoglFramebuffer *fb, ClutterActorBox * alloc, 
+  cairo_rectangle_int_t * rect) {
 
   coords[0] = rect->x / (alloc->x2 - alloc->x1);
   coords[1] = rect->y / (alloc->y2 - alloc->y1);
@@ -643,7 +644,6 @@ meta_shaped_texture_paint (ClutterActor *actor)
    */
   if (blended_region == NULL || !cairo_region_is_empty (blended_region))
     {
-      add_background_blur(stex, ctx, fb);
       CoglPipeline *blended_pipeline;
 
        // cogl_read_pixels (0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
@@ -674,6 +674,10 @@ meta_shaped_texture_paint (ClutterActor *actor)
 
       if (blended_region != NULL)
         {
+          cairo_rectangle_int_t * bounding_rect;
+          cairo_region_get_extents(blended_region, bounding_rect);
+          add_background_blur(stex, ctx, fb, alloc, bounding_rect);
+
           /* 1) blended_region is not empty. Paint the rectangles. */
           int i;
           int n_rects = cairo_region_num_rectangles (blended_region);
