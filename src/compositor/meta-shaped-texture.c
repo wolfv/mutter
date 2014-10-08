@@ -92,6 +92,9 @@ struct _MetaShapedTexturePrivate
 
   gint blur_pixel_step_uniform;
 
+  gfloat tex_width;
+  gfloat tex_height;
+
   gint blur_tex_width;
   gint blur_tex_height;
 
@@ -104,27 +107,6 @@ struct _MetaShapedTexturePrivate
 };
 
 #define BLUR_PADDING    2
-
-static const gchar *box_blur_glsl_declarations =
-"uniform vec2 pixel_step;\n";
-#define SAMPLE(offx, offy) \
-  "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
-  "vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
-static const gchar *box_blur_glsl_shader =
-"  cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
-  SAMPLE (-1.0, -1.0)
-  SAMPLE ( 0.0, -1.0)
-  SAMPLE (+1.0, -1.0)
-  SAMPLE (-1.0,  0.0)
-  SAMPLE (+1.0,  0.0)
-  SAMPLE (-1.0, +1.0)
-  SAMPLE ( 0.0, +1.0)
-  SAMPLE (+1.0, +1.0)
-"  cogl_texel /= 9.0;\n";
-#undef SAMPLE
-
-
-//"
 
 static CoglPipeline * base_pipeline;
 
