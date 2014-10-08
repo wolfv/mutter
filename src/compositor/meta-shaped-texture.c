@@ -104,25 +104,27 @@ struct _MetaShapedTexturePrivate
 
 };
 
+#define BLUR_PADDING    2
+
 static const gchar *box_blur_glsl_declarations =
 "uniform vec2 pixel_step;\n";
 #define SAMPLE(offx, offy) \
-"cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
-"vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
+  "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
+  "vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
 static const gchar *box_blur_glsl_shader =
-" cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
-SAMPLE (-1.0, -1.0)
-SAMPLE ( 0.0, -1.0)
-SAMPLE (+1.0, -1.0)
-SAMPLE (-1.0, 0.0)
-SAMPLE (+1.0, 0.0)
-SAMPLE (-1.0, +1.0)
-SAMPLE ( 0.0, +1.0)
-SAMPLE (+1.0, +1.0)
-" cogl_texel /= 9.0;\n";
+"  cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
+  SAMPLE (-1.0, -1.0)
+  SAMPLE ( 0.0, -1.0)
+  SAMPLE (+1.0, -1.0)
+  SAMPLE (-1.0,  0.0)
+  SAMPLE (+1.0,  0.0)
+  SAMPLE (-1.0, +1.0)
+  SAMPLE ( 0.0, +1.0)
+  SAMPLE (+1.0, +1.0)
+"  cogl_texel /= 9.0;\n";
 #undef SAMPLE
 
-
+//"
 blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 {
   // ClutterOffscreenEffect *offscreen_effect =
@@ -181,10 +183,11 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx)
   if(G_UNLIKELY (priv->base_pipeline == NULL)) {
     CoglPipeline * base_pipeline = cogl_pipeline_new (ctx);
     priv->base_pipeline = base_pipeline;
-    snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
-                                box_blur_glsl_declarations,
-                                NULL);
-    cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
+    snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_FRAGMENT,
+                                NULL,
+                                "cogl_color_out.rgb = "
+                                "vec3 (length (cogl_color_out.rgb) / 1.732);");
+    // cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
     cogl_pipeline_add_layer_snippet (priv->base_pipeline, 0, snippet);
     cogl_object_unref (snippet);
 
