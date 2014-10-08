@@ -107,9 +107,26 @@ struct _MetaShapedTexturePrivate
 };
 
 #define BLUR_PADDING    2
+static const gchar *box_blur_glsl_declarations =
+"uniform vec2 pixel_step;\n";
+#define SAMPLE(offx, offy) \
+  "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
+  "vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
+static const gchar *box_blur_glsl_shader =
+"  cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
+  SAMPLE (-1.0, -1.0)
+  SAMPLE ( 0.0, -1.0)
+  SAMPLE (+1.0, -1.0)
+  SAMPLE (-1.0,  0.0)
+  SAMPLE (+1.0,  0.0)
+  SAMPLE (-1.0, +1.0)
+  SAMPLE ( 0.0, +1.0)
+  SAMPLE (+1.0, +1.0)
+"  cogl_texel /= 9.0;\n";
+#undef SAMPLE
 
 static CoglPipeline * base_pipeline;
-
+//"
 static gboolean
 blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 {
@@ -124,19 +141,16 @@ blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
   priv->blur_tex_width = 200;
   priv->blur_tex_height = 200;
 
-  if (priv->blur_pixel_step_uniform > -1)
-    {
-      gfloat pixel_step[2];
+  gfloat pixel_step[2];
 
-      pixel_step[0] = 1.0f / priv->blur_tex_width;
-      pixel_step[1] = 1.0f / priv->blur_tex_height;
+  pixel_step[0] = 1.0f / priv->blur_tex_width;
+  pixel_step[1] = 1.0f / priv->blur_tex_height;
 
-      cogl_pipeline_set_uniform_float (priv->blur_pipeline,
-                                       priv->blur_pixel_step_uniform,
-                                       2, /* n_components */
-                                       1, /* count */
-                                       pixel_step);
-    }
+  cogl_pipeline_set_uniform_float (priv->blur_pipeline,
+                                   priv->blur_pixel_step_uniform,
+                                   2, /* n_components */
+                                   1, /* count */
+                                   pixel_step);
 
   cogl_pipeline_set_layer_texture (priv->blur_pipeline, 0, texture);
 
@@ -171,11 +185,10 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx)
   if(G_UNLIKELY (base_pipeline == NULL)) {
     base_pipeline = cogl_pipeline_new (ctx);
     base_pipeline = base_pipeline;
-    snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_FRAGMENT,
-                                NULL,
-                                "cogl_color_out.rgb = "
-                                "vec3 (length (cogl_color_out.rgb) / 1.732);");
-    // cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
+    snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+                                  box_blur_glsl_declarations,
+                                  NULL);
+    cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
     cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
     cogl_object_unref (snippet);
 
@@ -619,6 +632,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
    */
   if (blended_region == NULL || !cairo_region_is_empty (blended_region))
     {
+      add_background_blur(stex, ctx, fb);
       CoglPipeline *blended_pipeline;
 
        // cogl_read_pixels (0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT,
@@ -635,12 +649,11 @@ meta_shaped_texture_paint (ClutterActor *actor)
           blended_pipeline = get_masked_pipeline (ctx);
           cogl_pipeline_set_layer_texture (blended_pipeline, 1, priv->mask_texture);
           cogl_pipeline_set_layer_filters (blended_pipeline, 1, filter, filter);
+
       }
 
       cogl_pipeline_set_layer_texture (blended_pipeline, 0, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 0, filter, filter);
-
-      add_background_blur(stex, ctx, fb);
       // cogl_pipeline_set_layer_texture (blended_pipeline, 0, blur_texture);
 
 
@@ -653,8 +666,6 @@ meta_shaped_texture_paint (ClutterActor *actor)
           /* 1) blended_region is not empty. Paint the rectangles. */
           int i;
           int n_rects = cairo_region_num_rectangles (blended_region);
-
-
           for (i = 0; i < n_rects; i++)
             {
               cairo_rectangle_int_t rect;
