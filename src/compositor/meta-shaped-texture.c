@@ -90,16 +90,15 @@ struct _MetaShapedTexturePrivate
 
 // stuff for shader:
 
-  gint pixel_step_uniform;
+  gint blur_pixel_step_uniform;
 
-  gint tex_width;
-  gint tex_height;
+  gint blur_tex_width;
+  gint blur_tex_height;
 
-  CoglHandle shader;
-  CoglHandle program;
+  CoglHandle blur_shader;
+  CoglHandle blur_program;
 
-  CoglPipeline * base_pipeline;
-
+  CoglPipeline * blur_pipeline;
   guint is_compiled : 1;
 
 };
@@ -138,24 +137,26 @@ blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
 
 
   // texture = clutter_offscreen_effect_get_texture (offscreen_effect);
-  priv->tex_width = cogl_texture_get_width (texture);
-  priv->tex_height = cogl_texture_get_height (texture);
+  priv->blur_tex_width = cogl_texture_get_width (texture);
+  priv->blur_tex_height = cogl_texture_get_height (texture);
+  priv->blur_tex_width = 200;
+  priv->blur_tex_height = 200;
 
-  if (priv->pixel_step_uniform > -1)
+  if (priv->blur_pixel_step_uniform > -1)
     {
       gfloat pixel_step[2];
 
-      pixel_step[0] = 1.0f / priv->tex_width;
-      pixel_step[1] = 1.0f / priv->tex_height;
+      pixel_step[0] = 1.0f / priv->blur_tex_width;
+      pixel_step[1] = 1.0f / priv->blur_tex_height;
 
-      cogl_pipeline_set_uniform_float (priv->pipeline,
-                                       priv->pixel_step_uniform,
+      cogl_pipeline_set_uniform_float (priv->blur_pipeline,
+                                       priv->blur_pixel_step_uniform,
                                        2, /* n_components */
                                        1, /* count */
                                        pixel_step);
     }
 
-  cogl_pipeline_set_layer_texture (priv->pipeline, 0, texture);
+  cogl_pipeline_set_layer_texture (priv->blur_pipeline, 0, texture);
 
   return TRUE;
 }
@@ -169,12 +170,12 @@ blur_effect_paint_target (MetaShapedTexture * self)
 
   paint_opacity = 200;
 
-  cogl_pipeline_set_color4ub (priv->pipeline,
+  cogl_pipeline_set_color4ub (priv->blur_pipeline,
                               paint_opacity,
                               paint_opacity,
                               paint_opacity,
                               paint_opacity);
-  cogl_push_source (priv->pipeline);
+  cogl_push_source (priv->blur_pipeline);
   cogl_rectangle (0, 0, 200, 200);
   cogl_pop_source ();
 }
@@ -196,12 +197,12 @@ blur_effect_init (MetaShapedTexture *self, CoglContext * ctx)
     cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
     cogl_object_unref (snippet);
 
-    cogl_pipeline_set_layer_null_texture (base_pipeline,
+    cogl_pipeline_set_layer_null_texture (  base_pipeline,
                                           0, /* layer number */
                                           COGL_TEXTURE_TYPE_2D);
   }
-  priv->pipeline = cogl_pipeline_copy(base_pipeline);
-  priv->pixel_step_uniform =
+  priv->blur_pipeline = cogl_pipeline_copy(base_pipeline);
+  priv->blur_pixel_step_uniform =
     cogl_pipeline_get_uniform_location (base_pipeline, "pixel_step");
 }
 
@@ -402,28 +403,7 @@ static void add_background_blur(
   blur_effect_init(self, ctx);
   blur_effect_pre_paint(self, blur_texture);
   blur_effect_paint_target(self);
-
-  // ClutterActor * blur_actor = clutter_actor_new();
-  // ClutterContent * blur_bg_image = clutter_image_new();
-  // ClutterEffect * blur_effect = clutter_blur_effect_new();
-
-  // clutter_image_set_data(
-  //   CLUTTER_IMAGE(blur_bg_image),
-  //   pixels,
-  //   COGL_PIXEL_FORMAT_RGB_888,
-  //   rect.x,
-  //   rect.y,
-  //   rect.width,
-  //   rect.height,
-  //   0,
-  //   NULL
-  // );
-
-  // clutter_actor_set_content(blur_actor, (blur_bg_image));
-  // clutter_actor_add_effect(blur_actor, blur_effect);
-  // CoglTexture * blur_texture = clutter_image_get_texture(CLUTTER_IMAGE(blur_bg_image));
   
-  // CoglTexture * blur_texture = clutter_offscreen_effect_get_texture(blur_effect);
   // return blur_texture;
 }
 
