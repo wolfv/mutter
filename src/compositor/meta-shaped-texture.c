@@ -384,7 +384,7 @@ static void add_background_blur(
   MetaShapedTexturePrivate * priv = self->priv;
 
   // cairo_region_t *clr = priv->clip_region;
-  
+
 
   gint coords[4];
   // coords[0] = rect->x / (alloc->x2 - alloc->x1);
@@ -414,12 +414,16 @@ static void add_background_blur(
     COGL_PIXEL_FORMAT_RGBA_8888, 
     (guchar *) pixels);
 
-  CoglTexture * blur_texture = cogl_texture_new_from_file(
-    "/home/wolf/mutter/src/test.png",
-    COGL_TEXTURE_NO_SLICING,
-    COGL_PIXEL_FORMAT_RGBA_8888_PRE,
-    NULL);
-
+  CoglTexture * blur_texture = cogl_texture_new_from_data(
+    width, 
+    height,
+    COGL_TEXTURE_NONE,
+    COGL_PIXEL_FORMAT_RGBA_8888,
+    COGL_PIXEL_FORMAT_RGBA_8888,
+    0,
+    pixels
+  );
+  
   blur_effect_init(self, ctx);
   blur_effect_pre_paint(self, blur_texture);
   blur_effect_paint_target(self);
@@ -697,6 +701,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
             {
               cairo_rectangle_int_t rect;
               cairo_region_get_rectangle (blended_region, i, &rect);
+
               printf("rect: %d %d %d %d", rect.x, rect.y, rect.width, rect.height);
               add_background_blur(stex, ctx, fb, &alloc, rect);
 
