@@ -381,13 +381,24 @@ static void add_background_blur(
   CoglFramebuffer *fb, ClutterActorBox * alloc, 
   cairo_rectangle_int_t * rect) {
 
-  coords[0] = rect->x / (alloc->x2 - alloc->x1);
-  coords[1] = rect->y / (alloc->y2 - alloc->y1);
-  coords[2] = (rect->x + rect->width) / (alloc->x2 - alloc->x1);
-  coords[3] = (rect->y + rect->height) / (alloc->y2 - alloc->y1);
+  cairo_rectangle_int_t * clr = priv->clip_region;
 
-  gint width = coords[2] - coords[0];
-  gint height = coords[3] - coords[1];
+
+  gint coords[4];
+  // coords[0] = rect->x / (alloc->x2 - alloc->x1);
+  // coords[1] = rect->y / (alloc->y2 - alloc->y1);
+  // coords[2] = (rect->x + rect->width) / (alloc->x2 - alloc->x1);
+  // coords[3] = (rect->y + rect->height) / (alloc->y2 - alloc->y1);
+
+  // gint width = coords[2] - coords[0];
+  // gint height = coords[3] - coords[1];
+
+  coords[0] = clr.x;
+  coords[1] = clr.y;
+  coords[2] = clr.x + clr.width;
+  coords[3] = clr.y + clr.height;
+  gint width = clr.width;
+  gint height = clr.height;
 
   guchar * pixels;
   pixels = g_malloc0(width * height * 4);
@@ -676,7 +687,6 @@ meta_shaped_texture_paint (ClutterActor *actor)
         {
           cairo_rectangle_int_t * bounding_rect;
           cairo_region_get_extents(blended_region, bounding_rect);
-          add_background_blur(stex, ctx, fb, alloc, bounding_rect);
 
           /* 1) blended_region is not empty. Paint the rectangles. */
           int i;
@@ -685,6 +695,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
             {
               cairo_rectangle_int_t rect;
               cairo_region_get_rectangle (blended_region, i, &rect);
+              add_background_blur(stex, ctx, fb, alloc, &rect);
 
               if (!gdk_rectangle_intersect (&tex_rect, &rect, &rect))
                 continue;
