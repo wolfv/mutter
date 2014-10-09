@@ -383,7 +383,8 @@ static void add_background_blur(
 
   MetaShapedTexturePrivate * priv = self->priv;
 
-  cairo_region_t *clr = priv->clip_region;
+  // cairo_region_t *clr = priv->clip_region;
+  
 
   gint coords[4];
   // coords[0] = rect->x / (alloc->x2 - alloc->x1);
@@ -696,8 +697,8 @@ meta_shaped_texture_paint (ClutterActor *actor)
             {
               cairo_rectangle_int_t rect;
               cairo_region_get_rectangle (blended_region, i, &rect);
-              add_background_blur(stex, ctx, fb, &alloc, rect);
               printf("rect: %d %d %d %d", rect.x, rect.y, rect.width, rect.height);
+              add_background_blur(stex, ctx, fb, &alloc, rect);
 
               if (!gdk_rectangle_intersect (&tex_rect, &rect, &rect))
                 continue;
