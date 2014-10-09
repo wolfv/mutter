@@ -162,7 +162,7 @@ blur_effect_paint_target (MetaShapedTexture * self)
 
   guint8 paint_opacity;
 
-  paint_opacity = 200;
+  paint_opacity = 255;
 
   cogl_pipeline_set_color4ub (priv->blur_pipeline,
                               paint_opacity,
@@ -170,7 +170,7 @@ blur_effect_paint_target (MetaShapedTexture * self)
                               paint_opacity,
                               paint_opacity);
   cogl_push_source (priv->blur_pipeline);
-  cogl_rectangle (0, 0, 200, 200);
+  cogl_rectangle (0, 0, priv->blur_tex_width, priv->blur_tex_height);
   cogl_pop_source ();
 }
 
