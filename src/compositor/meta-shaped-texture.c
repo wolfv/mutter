@@ -394,12 +394,12 @@ static void add_background_blur(
   // gint width = coords[2] - coords[0];
   // gint height = coords[3] - coords[1];
 
-  coords[0] = clr.x;
-  coords[1] = clr.y;
-  coords[2] = clr.x + clr.width;
-  coords[3] = clr.y + clr.height;
-  gint width = clr.width;
-  gint height = clr.height;
+  coords[0] = clr->x;
+  coords[1] = clr->y;
+  coords[2] = clr->x + clr->width;
+  coords[3] = clr->y + clr->height;
+  gint width = clr->width;
+  gint height = clr->height;
 
   guchar * pixels;
   pixels = g_malloc0(width * height * 4);
@@ -504,7 +504,7 @@ set_cogl_texture (MetaShapedTexture *stex,
 
 
 static void
-meta_shaped_texture_get_paint_volume (ClutterActor *actor)
+meta_shaped_texture_paint (ClutterActor *actor)
 {
   MetaShapedTexture *stex = (MetaShapedTexture *) actor;
   MetaShapedTexturePrivate *priv = stex->priv;
