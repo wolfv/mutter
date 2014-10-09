@@ -379,7 +379,7 @@ get_unblended_pipeline (CoglContext *ctx)
 static void add_background_blur(
   MetaShapedTexture * self, CoglContext * ctx,
   CoglFramebuffer *fb, ClutterActorBox * alloc, 
-  cairo_rectangle_int_t * rect) {
+  cairo_rectangle_int_t rect) {
 
   MetaShapedTexturePrivate * priv = self->priv;
 
@@ -394,12 +394,12 @@ static void add_background_blur(
   // gint width = coords[2] - coords[0];
   // gint height = coords[3] - coords[1];
 
-  coords[0] = clr->x;
-  coords[1] = clr->y;
-  coords[2] = clr->x + clr->width;
-  coords[3] = clr->y + clr->height;
-  gint width = clr->width;
-  gint height = clr->height;
+  coords[0] = clr.x;
+  coords[1] = clr.y;
+  coords[2] = clr.x + clr.width;
+  coords[3] = clr.y + clr.height;
+  gint width = clr.width;
+  gint height = clr.height;
 
   guchar * pixels;
   pixels = g_malloc0(width * height * 4);
@@ -696,8 +696,8 @@ meta_shaped_texture_paint (ClutterActor *actor)
             {
               cairo_rectangle_int_t rect;
               cairo_region_get_rectangle (blended_region, i, &rect);
-              add_background_blur(stex, ctx, fb, &alloc, &rect);
-              printf("rect: %d %d %d %d", rect.x, rect.y, rect.width, rect.heigth);
+              add_background_blur(stex, ctx, fb, &alloc, rect);
+              printf("rect: %d %d %d %d", rect.x, rect.y, rect.width, rect.height);
 
               if (!gdk_rectangle_intersect (&tex_rect, &rect, &rect))
                 continue;
