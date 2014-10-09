@@ -381,8 +381,9 @@ static void add_background_blur(
   CoglFramebuffer *fb, ClutterActorBox * alloc, 
   cairo_rectangle_int_t * rect) {
 
-  cairo_rectangle_int_t * clr = priv->clip_region;
+  MetaShapedTexturePrivate * priv = self->priv;
 
+  cairo_region_t *clr = priv->clip_region;
 
   gint coords[4];
   // coords[0] = rect->x / (alloc->x2 - alloc->x1);
@@ -503,7 +504,7 @@ set_cogl_texture (MetaShapedTexture *stex,
 
 
 static void
-meta_shaped_texture_paint (ClutterActor *actor)
+meta_shaped_texture_get_paint_volume (ClutterActor *actor)
 {
   MetaShapedTexture *stex = (MetaShapedTexture *) actor;
   MetaShapedTexturePrivate *priv = stex->priv;
@@ -695,7 +696,8 @@ meta_shaped_texture_paint (ClutterActor *actor)
             {
               cairo_rectangle_int_t rect;
               cairo_region_get_rectangle (blended_region, i, &rect);
-              add_background_blur(stex, ctx, fb, alloc, &rect);
+              add_background_blur(stex, ctx, fb, &alloc, &rect);
+              printf("rect: %d %d %d %d", rect.x, rect.y, rect.width, rect.heigth);
 
               if (!gdk_rectangle_intersect (&tex_rect, &rect, &rect))
                 continue;
