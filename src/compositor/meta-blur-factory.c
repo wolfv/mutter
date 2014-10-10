@@ -73,6 +73,11 @@ struct _MetaBlur
 
 G_DEFINE_TYPE (MetaBlur, meta_blur, G_TYPE_OBJECT);
 
+MetaBlur * 
+meta_blur_new() {
+  return g_object_new (META_TYPE_BLUR, NULL);
+}
+
 void
 meta_blur_paint (MetaBlur          *self,
                    int             window_x,
@@ -83,19 +88,12 @@ meta_blur_paint (MetaBlur          *self,
                    cairo_region_t *clip,
                    gboolean        clip_strictly)
 {
-  float texture_width = cogl_texture_get_width (self->texture);
-  float texture_height = cogl_texture_get_height (self->texture);
-  int i, j;
-  float src_x[4];
-  float src_y[4];
-  int dest_x[4];
-  int dest_y[4];
-  int n_x, n_y;
-
   if(self->pipeline == NULL) {
     make_blur(self);
   }
 
+  guchar * pixels;
+  pixels = g_malloc0(window_width * window_height * 4);
 
   cogl_read_pixels(
     window_x, 
@@ -107,8 +105,8 @@ meta_blur_paint (MetaBlur          *self,
     (guchar *) pixels);
 
   self->texture = cogl_texture_new_from_data(
-    width, 
-    height,
+    window_width, 
+    window_height,
     COGL_TEXTURE_NONE,
     COGL_PIXEL_FORMAT_RGBA_8888,
     COGL_PIXEL_FORMAT_RGBA_8888,
@@ -116,21 +114,10 @@ meta_blur_paint (MetaBlur          *self,
     pixels
   );
 
-
-
-  // self->texture = COGL_TEXTURE (cogl_texture_2d_new_from_data (ctx,
-  //                                                              extents.width,
-  //                                                              extents.height,
-  //                                                              COGL_PIXEL_FORMAT_RGBA_8888,
-  //                                                              buffer_width,
-  //                                                              buffer_height,
-  //                                                              NULL));
-
-
   gfloat pixel_step[2];
 
-  pixel_step[0] = 1.0f / texture_width;
-  pixel_step[1] = 1.0f / texture_width;
+  pixel_step[0] = 1.0f / window_width;
+  pixel_step[1] = 1.0f / window_height;
 
   cogl_pipeline_set_uniform_float (self->pipeline,
                                    self->blur_pixel_step_uniform,
@@ -145,7 +132,7 @@ meta_blur_paint (MetaBlur          *self,
 
   cogl_set_source (self->pipeline);
 
-  cogl_rectangle (0, 0, texture_height, texture_width);
+  cogl_rectangle (0, 0, window_width, window_height);
   // cogl_rectangle_with_texture_coords (window_x, window_y, );
 }
 

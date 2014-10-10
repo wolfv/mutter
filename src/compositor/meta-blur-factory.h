@@ -15,7 +15,7 @@ typedef struct _MetaBlur MetaBlur;
 #define META_IS_BLUR_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), META_TYPE_BLUR))
 #define META_BLUR_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), META_TYPE_BLUR, MetaBlurClass))
 
-GType meta_blur_get_type();
+GType     meta_blur_get_type();
 
 void        meta_blur_paint       (MetaBlur           *shadow,
                                      int                    window_x,
