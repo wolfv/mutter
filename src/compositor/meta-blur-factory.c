@@ -56,8 +56,8 @@ struct _MetaBlur
    * shape; the inner border is the unscaled portion inside the window
    * shape */
 
-  gint tex_width;
-  gint tex_height;
+  guint tex_width;
+  guint tex_height;
 
   guint scale_width : 1;
   guint scale_height : 1;
@@ -294,8 +294,7 @@ meta_blur_paint (MetaBlur          *self,
     self->vertical_texture_dirty = FALSE;
   }
 
-  paint_opacity = clutter_actor_get_paint_opacity (self->actor);
-
+  paint_opacity = 255;
   cogl_pipeline_set_color4ub (self->vertical_pipeline,
                               paint_opacity,
                               paint_opacity,
