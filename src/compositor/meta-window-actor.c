@@ -266,6 +266,7 @@ meta_window_actor_init (MetaWindowActor *self)
 						   META_TYPE_WINDOW_ACTOR,
 						   MetaWindowActorPrivate);
   priv->shadow_class = NULL;
+  priv->blur = meta_blur_new();
 }
 
 static void
