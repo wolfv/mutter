@@ -114,19 +114,28 @@ meta_blur_paint (MetaBlur          *self,
     pixels
   );
 
-  gfloat pixel_step[2];
+  self->pixel_step_uniform =
+    cogl_pipeline_get_uniform_location (self->pipeline, "pixel_step");
 
-  pixel_step[0] = 1.0f / window_width;
-  pixel_step[1] = 1.0f / window_height;
+  if(self->pixel_step_uniform > -1) {
 
-  cogl_pipeline_set_uniform_float (self->pipeline,
-                                   self->blur_pixel_step_uniform,
-                                   2, /* n_components */
-                                   1, /* count */
-                                   pixel_step);
+      gfloat pixel_step[2];
+
+      pixel_step[0] = 1.0f / window_width;
+      pixel_step[1] = 1.0f / window_height;
+
+      cogl_pipeline_set_uniform_float (self->pipeline,
+                                       self->pixel_step_uniform,
+                                       2, /* n_components */
+                                       1, /* count */
+                                       pixel_step);
+    }
 
   cogl_pipeline_set_layer_texture (self->pipeline, 0, self->texture);
 
+  cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
+  self->pipeline = cogl_pipeline_new (ctx);
+  cogl_pipeline_add_layer_snippet (self->pipeline, 0, self->snippet);
   cogl_pipeline_set_color4ub (self->pipeline,
                               opacity, opacity, opacity, opacity);
 
