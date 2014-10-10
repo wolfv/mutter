@@ -57,8 +57,6 @@ struct _MetaBlur
 {
   int ref_count;
 
-  MetaBlurFactory *factory;
-  MetaBlurCacheKey key;
   CoglTexture *texture;
   CoglPipeline *pipeline;
 
