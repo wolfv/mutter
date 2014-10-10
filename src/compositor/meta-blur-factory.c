@@ -42,7 +42,7 @@ struct _MetaBlur
 
   guint scale_width : 1;
   guint scale_height : 1;
-  gint blur_pixel_step_uniform;
+  gint pixel_step_uniform;
   CoglSnippet * snippet;
 
 };
@@ -64,6 +64,8 @@ make_blur (MetaBlur *self)
 {
   ClutterBackend *backend = clutter_get_default_backend ();
   CoglContext *ctx = clutter_backend_get_cogl_context (backend);
+  self->pipeline = cogl_pipeline_new (ctx);
+
   CoglSnippet * snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                               box_blur_glsl_declarations,
                               NULL);
@@ -103,7 +105,7 @@ meta_blur_paint (MetaBlur          *self,
     COGL_PIXEL_FORMAT_RGBA_8888, 
     (guchar *) pixels);
   int i = 0;
-  for(i = 0; i < window_width * window_height * 4, i += 4) {
+  for(i = 0; i < window_width * window_height * 4; i += 4) {
     pixels[i] = 0;
   }
   
