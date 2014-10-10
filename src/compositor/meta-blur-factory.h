@@ -31,4 +31,6 @@ void        meta_blur_paint       (MetaBlur           *shadow,
                                      guint8                 opacity,
                                      cairo_region_t        *clip,
                                      gboolean               clip_strictly);
+void clutter_blur_effect_set_sigma_real (MetaBlur * self, gfloat sigma);
+
 #endif
