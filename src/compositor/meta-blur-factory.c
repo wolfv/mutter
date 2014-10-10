@@ -79,8 +79,9 @@ meta_blur_new(void) {
 }
 
 static void meta_blur_init(MetaBlur * klass) {
-    clutter_blur_effect_set_sigma_real (klass, 0.84089642f);
+    meta_blur_set_sigma_real (klass, 0.84089642f);
 };
+
 static void meta_blur_class_init(MetaBlurClass * klass) {};
 
 
@@ -197,7 +198,7 @@ update_vertical_pipeline_texture (MetaBlur *self) {
     pixel_step);
 }
 
-void
+static void
 meta_blur_post_paint(MetaBlur * self) {
   CoglHandle horizontal_texture;
 
