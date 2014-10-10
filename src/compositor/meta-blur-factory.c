@@ -70,6 +70,20 @@ struct _MetaBlur
 
 };
 
+
+MetaBlur * 
+meta_blur_new() {
+  return g_object_new (META_TYPE_BLUR, NULL);
+}
+
+void
+meta_blur_init(MetaBlur * self) {
+}
+void
+meta_blur_class_init(MetaBlur * self) {
+}
+
+
 G_DEFINE_TYPE (MetaBlur, meta_blur, G_TYPE_OBJECT);
 
 static void
@@ -86,17 +100,6 @@ make_blur (MetaBlur *self)
   cogl_pipeline_add_layer_snippet (self->pipeline, 0, self->snippet);
 }
 
-MetaBlur * 
-meta_blur_new() {
-  return g_object_new (META_TYPE_BLUR, NULL);
-}
-
-void
-meta_blur_init(MetaBlur * self) {
-}
-void
-meta_blur_class_init(MetaBlur * self) {
-}
 
 void
 meta_blur_paint (MetaBlur          *self,
