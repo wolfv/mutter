@@ -305,6 +305,7 @@ meta_blur_paint (MetaBlur          *self,
                                    self->vertical_pipeline,
                                    0, 0,
                                    self->tex_width ,self->tex_height);
+  meta_blur_post_paint(self);
 }
 
 
