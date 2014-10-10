@@ -106,7 +106,7 @@ make_blur (MetaBlur *self)
 
 
 CoglPipeline *
-get_pipeline(MetaBlur * self) {
+get_blur_pipeline(MetaBlur * self) {
   CoglSnippet *snippet;
   GString *source = g_string_new (NULL);
   CoglContext *ctx =
