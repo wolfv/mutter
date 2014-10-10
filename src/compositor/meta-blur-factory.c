@@ -1,26 +1,3 @@
-/* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
-/*
- * Copyright 2010 Red Hat, Inc.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, see <http://www.gnu.org/licenses/>.
- */
-
-/**
- * SECTION:meta-shadow-factory
- * @title: MetaBlurFactory
- * @short_description: Create and cache shadow textures for abritrary window shapes
- */
 
 #include <config.h>
 #include <math.h>
@@ -75,6 +52,10 @@ MetaBlur *
 meta_blur_new(void) {
   return g_object_new (META_TYPE_BLUR, NULL);
 }
+
+static void meta_blur_init(MetaBlur * klass) {};
+static void meta_blur_class_init(MetaBlurClass * klass) {};
+
 
 G_DEFINE_TYPE (MetaBlur, meta_blur, G_TYPE_OBJECT);
 
