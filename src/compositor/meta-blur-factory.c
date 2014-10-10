@@ -150,61 +150,6 @@ meta_blur_paint (MetaBlur          *self,
 }
 
 static void
-meta_blur_class_info_free (MetaBlurClassInfo *class_info)
-{
-  g_free ((char *)class_info->name);
-  g_slice_free (MetaBlurClassInfo, class_info);
-}
-
-static void
-meta_blur_factory_init (MetaBlurFactory *factory)
-{
-  factory->snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
-                          box_blur_glsl_declarations,
-                          NULL);
-  cogl_snippet_set_replace (factory->snippet, box_blur_glsl_shader);
-  guint i;
-}
-
-static void
-meta_blur_factory_finalize (GObject *object)
-{
-  MetaBlurFactory *factory = meta_blur_FACTORY (object);
-  /* Detach from the shadows in the table so we won't try to
-   * remove them when they're freed. */
-  G_OBJECT_CLASS (meta_blur_factory_parent_class)->finalize (object);
-}
-
-static void
-meta_blur_factory_class_init (MetaBlurFactoryClass *klass)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
-  object_class->finalize = meta_blur_factory_finalize;
-}
-
-MetaBlurFactory *
-meta_blur_factory_new (void)
-{
-  return g_object_new (META_TYPE_BLUR_FACTORY, NULL);
-}
-
-/**
- * meta_blur_factory_get_default:
- *
- * Return value: (transfer none): the global singleton shadow factory
- */
-MetaBlurFactory *
-meta_blur_factory_get_default (void)
-{
-  static MetaBlurFactory *factory;
-
-  if (factory == NULL)
-    factory = meta_blur_factory_new ();
-
-  return factory;
-}
-
-static void
 make_blur (MetaBlur *self)
 {
   ClutterBackend *backend = clutter_get_default_backend ();
@@ -216,6 +161,10 @@ make_blur (MetaBlur *self)
   int x_offset;
   int y_offset;
   int n_rectangles, j, k;
+  self->snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+                          box_blur_glsl_declarations,
+                          NULL);
+  cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
 
   cairo_region_get_extents (region, &extents);
 
