@@ -124,7 +124,7 @@ get_blur_pipeline(MetaBlur * self, int radius) {
 
   g_string_set_size (source, 0);
 
-  pipeline = cogl_pipeline_new (ctx);
+  CoglPipeline * pipeline = cogl_pipeline_new (ctx);
   cogl_pipeline_set_layer_null_texture (pipeline,
                                         0, /* layer_num */
                                         COGL_TEXTURE_TYPE_2D);
@@ -155,12 +155,13 @@ get_blur_pipeline(MetaBlur * self, int radius) {
                             ") * factors[%i];\n",
                             i);
   }
-  cogl_pipeline_set_layer_texture (self->pipeline, 0, texture);
   cogl_snippet_set_replace (snippet, source->str);
+
   g_string_free (source, TRUE);
+
   cogl_pipeline_add_layer_snippet (pipeline, 0, snippet);
+
   cogl_object_unref (snippet);
-  return pipeline;
 }
 
 
