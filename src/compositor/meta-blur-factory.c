@@ -67,6 +67,7 @@ struct _MetaBlur
   guint scale_width : 1;
   guint scale_height : 1;
   gint blur_pixel_step_uniform;
+  CoglSnippet * snippet;
 
 };
 
