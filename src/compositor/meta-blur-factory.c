@@ -72,13 +72,14 @@ struct _MetaBlur
 
 
 MetaBlur * 
-meta_blur_new() {
+meta_blur_new(void) {
   return g_object_new (META_TYPE_BLUR, NULL);
 }
 
 void
 meta_blur_init(MetaBlur * self) {
 }
+
 void
 meta_blur_class_init(MetaBlur * self) {
 }
