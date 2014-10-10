@@ -50,7 +50,6 @@ static const gchar *box_blur_glsl_shader =
 "  cogl_texel /= 9.0;\n";
 #undef SAMPLE
 
-static CoglPipeline * base_pipeline;
 //"
 
 struct _MetaBlur
@@ -72,6 +71,20 @@ struct _MetaBlur
 };
 
 G_DEFINE_TYPE (MetaBlur, meta_blur, G_TYPE_OBJECT);
+
+static void
+make_blur (MetaBlur *self)
+{
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
+  self->snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+                          box_blur_glsl_declarations,
+                          NULL);
+
+  cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
+  self->pipeline = cogl_pipeline_new (ctx);
+  cogl_pipeline_add_layer_snippet (self->pipeline, 0, self->snippet);
+}
 
 MetaBlur * 
 meta_blur_new() {
@@ -136,16 +149,3 @@ meta_blur_paint (MetaBlur          *self,
   // cogl_rectangle_with_texture_coords (window_x, window_y, );
 }
 
-static void
-make_blur (MetaBlur *self)
-{
-  ClutterBackend *backend = clutter_get_default_backend ();
-  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
-  self->snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
-                          box_blur_glsl_declarations,
-                          NULL);
-
-  cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
-  self->pipeline = cogl_pipeline_new (ctx);
-  cogl_pipeline_add_layer_snippet (self->pipeline, 0, self->snippet);
-}
