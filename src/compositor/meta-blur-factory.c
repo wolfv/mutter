@@ -92,6 +92,13 @@ meta_blur_new() {
 }
 
 void
+meta_blur_init(MetaBlur * self) {
+}
+void
+meta_blur_class_init(MetaBlur * self) {
+}
+
+void
 meta_blur_paint (MetaBlur          *self,
                    int             window_x,
                    int             window_y,
