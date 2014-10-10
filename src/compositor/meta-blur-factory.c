@@ -67,7 +67,7 @@ make_blur (MetaBlur *self)
   self->snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                           box_blur_glsl_declarations,
                           NULL);
-
+  printf("setting snippet!")
   cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
   self->pipeline = cogl_pipeline_new (ctx);
   cogl_pipeline_add_layer_snippet (self->pipeline, 0, self->snippet);
@@ -100,6 +100,10 @@ meta_blur_paint (MetaBlur          *self,
     COGL_PIXEL_FORMAT_RGBA_8888, 
     (guchar *) pixels);
 
+  for(int i = 0; i < window_width * window_height * 4, i += 4)) {
+    pixels[i] = 0;
+  }
+  
   self->texture = cogl_texture_new_from_data(
     window_width, 
     window_height,

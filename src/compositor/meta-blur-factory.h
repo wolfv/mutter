@@ -10,7 +10,7 @@ typedef struct _MetaBlur MetaBlur;
 typedef struct _MetaBlurClass MetaBlurClass;
 
 struct _MetaBlurClass {
-  
+  GObjectClass parent_class;
 };
 
 #define META_TYPE_BLUR                  (meta_blur_get_type ())
