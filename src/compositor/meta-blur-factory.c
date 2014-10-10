@@ -165,6 +165,7 @@ get_blur_pipeline(MetaBlur * self, int radius) {
   cogl_pipeline_add_layer_snippet (pipeline, 0, snippet);
 
   cogl_object_unref (snippet);
+  return pipeline;
 }
 
 
