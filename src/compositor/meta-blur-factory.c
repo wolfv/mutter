@@ -199,6 +199,7 @@ update_vertical_pipeline_texture (MetaBlur *self) {
     pixel_step);
 }
 
+void
 meta_blur_post_paint(MetaBlur * self) {
   CoglHandle horizontal_texture;
 
@@ -294,7 +295,7 @@ meta_blur_paint (MetaBlur          *self,
     self->vertical_texture_dirty = FALSE;
   }
 
-  paint_opacity = 255;
+  gint paint_opacity = 255;
   cogl_pipeline_set_color4ub (self->vertical_pipeline,
                               paint_opacity,
                               paint_opacity,
@@ -335,7 +336,7 @@ meta_blur_set_sigma_real (MetaBlur *self,
   if (self->horizontal_pipeline == NULL)
     {
       CoglPipeline *base_pipeline =
-        get_blur_pipeline (CLUTTER_BLUR_EFFECT_GET_CLASS (self),
+        get_blur_pipeline (self,
                            radius);
 
       self->horizontal_pipeline = cogl_pipeline_copy (base_pipeline);
