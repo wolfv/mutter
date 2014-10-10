@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "cogl-utils.h"
-#include "meta-shadow-factory-private.h"
+#include "meta-blur-factory.h"
 #include "region-utils.h"
 
 
@@ -144,8 +144,8 @@ make_blur (MetaBlur *self)
   self->snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                           box_blur_glsl_declarations,
                           NULL);
-  cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
 
+  cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
   self->pipeline = cogl_pipeline_new (ctx);
   cogl_pipeline_add_layer_snippet (self->pipeline, 0, self->snippet);
 }
