@@ -45,7 +45,7 @@ struct _MetaBlur
   CoglHandle vertical_fbo;
 
   CoglPipeline *horizontal_pipeline;
-  gint horizontal_pixel_step_uniform
+  gint horizontal_pixel_step_uniform;
   gint horizontal_factors_uniform;
   
   CoglPipeline *vertical_pipeline;
@@ -301,7 +301,7 @@ meta_blur_paint (MetaBlur          *self,
   cogl_framebuffer_draw_rectangle (cogl_get_draw_framebuffer (),
                                    self->vertical_pipeline,
                                    0, 0,
-                                   self->tex_width, self->tex_height);
+                                   self->tex_width ,self->tex_height);
 }
 
 
