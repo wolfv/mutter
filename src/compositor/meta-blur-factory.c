@@ -125,7 +125,7 @@ meta_blur_paint (MetaBlur          *self,
                                    1, /* count */
                                    pixel_step);
 
-  cogl_pipeline_set_layer_texture (self->pipeline, 0, texture);
+  cogl_pipeline_set_layer_texture (self->pipeline, 0, self->texture);
 
   cogl_pipeline_set_color4ub (self->pipeline,
                               opacity, opacity, opacity, opacity);
