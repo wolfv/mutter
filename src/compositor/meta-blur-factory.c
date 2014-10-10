@@ -105,10 +105,7 @@ make_blur (MetaBlur *self)
                                         COGL_TEXTURE_TYPE_2D);
 }
 
-
-
-
-CoglPipeline *
+static CoglPipeline *
 get_blur_pipeline(MetaBlur * self, int radius) {
   CoglSnippet *snippet;
   GString *source = g_string_new (NULL);
