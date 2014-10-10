@@ -78,10 +78,6 @@ meta_blur_new(void) {
   return g_object_new (META_TYPE_BLUR, NULL);
 }
 
-static void meta_blur_init(MetaBlur * klass) {
-    meta_blur_set_sigma_real (klass, 0.84089642f);
-};
-
 static void meta_blur_class_init(MetaBlurClass * klass) {};
 
 
@@ -398,3 +394,8 @@ meta_blur_set_sigma_real (MetaBlur *self,
 
   self->vertical_texture_dirty = TRUE;
 }
+
+static void meta_blur_init(MetaBlur * klass) {
+    meta_blur_set_sigma_real (klass, 0.84089642f);
+};
+
