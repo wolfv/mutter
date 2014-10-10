@@ -56,6 +56,9 @@ struct _MetaBlur
    * shape; the inner border is the unscaled portion inside the window
    * shape */
 
+  gint tex_width;
+  gint tex_height;
+
   guint scale_width : 1;
   guint scale_height : 1;
   gint pixel_step_uniform;
