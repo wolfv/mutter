@@ -106,98 +106,98 @@ struct _MetaShapedTexturePrivate
 
 };
 
-#define BLUR_PADDING    2
-static const gchar *box_blur_glsl_declarations =
-"uniform vec2 pixel_step;\n";
-#define SAMPLE(offx, offy) \
-  "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
-  "vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
-static const gchar *box_blur_glsl_shader =
-"  cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
-  SAMPLE (-1.0, -1.0)
-  SAMPLE ( 0.0, -1.0)
-  SAMPLE (+1.0, -1.0)
-  SAMPLE (-1.0,  0.0)
-  SAMPLE (+1.0,  0.0)
-  SAMPLE (-1.0, +1.0)
-  SAMPLE ( 0.0, +1.0)
-  SAMPLE (+1.0, +1.0)
-"  cogl_texel /= 9.0;\n";
-#undef SAMPLE
+// #define BLUR_PADDING    2
+// static const gchar *box_blur_glsl_declarations =
+// "uniform vec2 pixel_step;\n";
+// #define SAMPLE(offx, offy) \
+//   "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
+//   "vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
+// static const gchar *box_blur_glsl_shader =
+// "  cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
+//   SAMPLE (-1.0, -1.0)
+//   SAMPLE ( 0.0, -1.0)
+//   SAMPLE (+1.0, -1.0)
+//   SAMPLE (-1.0,  0.0)
+//   SAMPLE (+1.0,  0.0)
+//   SAMPLE (-1.0, +1.0)
+//   SAMPLE ( 0.0, +1.0)
+//   SAMPLE (+1.0, +1.0)
+// "  cogl_texel /= 9.0;\n";
+// #undef SAMPLE
 
-static CoglPipeline * base_pipeline;
-//"
-static gboolean
-blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
-{
-  // ClutterOffscreenEffect *offscreen_effect =
-  //   CLUTTER_OFFSCREEN_EFFECT (effect);
-  MetaShapedTexturePrivate * priv = self->priv;
+// static CoglPipeline * base_pipeline;
+// //"
+// static gboolean
+// blur_effect_pre_paint (MetaShapedTexture * self, CoglTexture * texture)
+// {
+//   // ClutterOffscreenEffect *offscreen_effect =
+//   //   CLUTTER_OFFSCREEN_EFFECT (effect);
+//   MetaShapedTexturePrivate * priv = self->priv;
 
 
-  // texture = clutter_offscreen_effect_get_texture (offscreen_effect);
-  priv->blur_tex_width = cogl_texture_get_width (texture);
-  priv->blur_tex_height = cogl_texture_get_height (texture);
+//   // texture = clutter_offscreen_effect_get_texture (offscreen_effect);
+//   priv->blur_tex_width = cogl_texture_get_width (texture);
+//   priv->blur_tex_height = cogl_texture_get_height (texture);
 
-  gfloat pixel_step[2];
+//   gfloat pixel_step[2];
 
-  pixel_step[0] = 1.0f / priv->blur_tex_width;
-  pixel_step[1] = 1.0f / priv->blur_tex_height;
+//   pixel_step[0] = 1.0f / priv->blur_tex_width;
+//   pixel_step[1] = 1.0f / priv->blur_tex_height;
 
-  cogl_pipeline_set_uniform_float (priv->blur_pipeline,
-                                   priv->blur_pixel_step_uniform,
-                                   2, /* n_components */
-                                   1, /* count */
-                                   pixel_step);
+//   cogl_pipeline_set_uniform_float (priv->blur_pipeline,
+//                                    priv->blur_pixel_step_uniform,
+//                                    2, /* n_components */
+//                                    1, /* count */
+//                                    pixel_step);
 
-  cogl_pipeline_set_layer_texture (priv->blur_pipeline, 0, texture);
+//   cogl_pipeline_set_layer_texture (priv->blur_pipeline, 0, texture);
 
-  return TRUE;
-}
+//   return TRUE;
+// }
 
-static void
-blur_effect_paint_target (MetaShapedTexture * self)
-{
-  MetaShapedTexturePrivate * priv = self->priv;
+// static void
+// blur_effect_paint_target (MetaShapedTexture * self)
+// {
+//   MetaShapedTexturePrivate * priv = self->priv;
 
-  guint8 paint_opacity;
+//   guint8 paint_opacity;
 
-  paint_opacity = 255;
+//   paint_opacity = 255;
 
-  cogl_pipeline_set_color4ub (priv->blur_pipeline,
-                              paint_opacity,
-                              paint_opacity,
-                              paint_opacity,
-                              paint_opacity);
-  cogl_push_source (priv->blur_pipeline);
-  cogl_rectangle (0, 0, priv->blur_tex_width, priv->blur_tex_height);
-  cogl_pop_source ();
-}
+//   cogl_pipeline_set_color4ub (priv->blur_pipeline,
+//                               paint_opacity,
+//                               paint_opacity,
+//                               paint_opacity,
+//                               paint_opacity);
+//   cogl_push_source (priv->blur_pipeline);
+//   cogl_rectangle (0, 0, priv->blur_tex_width, priv->blur_tex_height);
+//   cogl_pop_source ();
+// }
 
-static void
-blur_effect_init (MetaShapedTexture *self, CoglContext * ctx)
-{
-  // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
-  CoglSnippet *snippet;
-  MetaShapedTexturePrivate * priv = self->priv;
-  if(G_UNLIKELY (base_pipeline == NULL)) {
-    base_pipeline = cogl_pipeline_new (ctx);
-    base_pipeline = base_pipeline;
-    snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
-                                  box_blur_glsl_declarations,
-                                  NULL);
-    cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
-    cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
-    cogl_object_unref (snippet);
+// static void
+// blur_effect_init (MetaShapedTexture *self, CoglContext * ctx)
+// {
+//   // ClutterBlurEffectClass *klass = CLUTTER_BLUR_EFFECT_GET_CLASS (self);
+//   CoglSnippet *snippet;
+//   MetaShapedTexturePrivate * priv = self->priv;
+//   if(G_UNLIKELY (base_pipeline == NULL)) {
+//     base_pipeline = cogl_pipeline_new (ctx);
+//     base_pipeline = base_pipeline;
+//     snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+//                                   box_blur_glsl_declarations,
+//                                   NULL);
+//     cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
+//     cogl_pipeline_add_layer_snippet (base_pipeline, 0, snippet);
+//     cogl_object_unref (snippet);
 
-    cogl_pipeline_set_layer_null_texture (  base_pipeline,
-                                          0, /* layer number */
-                                          COGL_TEXTURE_TYPE_2D);
-  }
-  priv->blur_pipeline = cogl_pipeline_copy(base_pipeline);
-  priv->blur_pixel_step_uniform =
-    cogl_pipeline_get_uniform_location (base_pipeline, "pixel_step");
-}
+//     cogl_pipeline_set_layer_null_texture (  base_pipeline,
+//                                           0, /* layer number */
+//                                           COGL_TEXTURE_TYPE_2D);
+//   }
+//   priv->blur_pipeline = cogl_pipeline_copy(base_pipeline);
+//   priv->blur_pixel_step_uniform =
+//     cogl_pipeline_get_uniform_location (base_pipeline, "pixel_step");
+// }
 
 
 
@@ -376,60 +376,63 @@ get_unblended_pipeline (CoglContext *ctx)
   return cogl_pipeline_copy (template);
 }
 
-static void add_background_blur(
-  MetaShapedTexture * self, CoglContext * ctx,
-  CoglFramebuffer *fb, ClutterActorBox * alloc, 
-  cairo_rectangle_int_t rect) {
+// static void add_background_blur(
+//   MetaShapedTexture * self, CoglContext * ctx,
+//   CoglFramebuffer *fb, ClutterActorBox * alloc, 
+//   cairo_rectangle_int_t rect) {
 
-  MetaShapedTexturePrivate * priv = self->priv;
+//   MetaShapedTexturePrivate * priv = self->priv;
 
-  // cairo_region_t *clr = priv->clip_region;
+//   // cairo_region_t *clr = priv->clip_region;
 
 
-  gint coords[4];
-  // coords[0] = rect->x / (alloc->x2 - alloc->x1);
-  // coords[1] = rect->y / (alloc->y2 - alloc->y1);
-  // coords[2] = (rect->x + rect->width) / (alloc->x2 - alloc->x1);
-  // coords[3] = (rect->y + rect->height) / (alloc->y2 - alloc->y1);
+//   gint coords[4];
+//   // coords[0] = rect->x / (alloc->x2 - alloc->x1);
+//   // coords[1] = rect->y / (alloc->y2 - alloc->y1);
+//   // coords[2] = (rect->x + rect->width) / (alloc->x2 - alloc->x1);
+//   // coords[3] = (rect->y + rect->height) / (alloc->y2 - alloc->y1);
 
-  // gint width = coords[2] - coords[0];
-  // gint height = coords[3] - coords[1];
+//   // gint width = coords[2] - coords[0];
+//   // gint height = coords[3] - coords[1];
+//   gint xoffset;
+//   gint yoffset;
+//   meta_actor_painting_untransformed(clr.width, clr.height, &xoffset, &yoffset)
 
-  coords[0] = clr.x;
-  coords[1] = clr.y;
-  coords[2] = clr.x + clr.width;
-  coords[3] = clr.y + clr.height;
-  gint width = clr.width;
-  gint height = clr.height;
+//   coords[0] = clr.x + xoffset;
+//   coords[1] = clr.y + yoffset;
+//   coords[2] = coords[0] + clr.width;
+//   coords[3] = coords[1] + clr.height;
+//   gint width = clr.width;
+//   gint height = clr.height;
 
-  guchar * pixels;
-  pixels = g_malloc0(width * height * 4);
+//   guchar * pixels;
+//   pixels = g_malloc0(width * height * 4);
 
-  cogl_read_pixels(
-    coords[0], 
-    coords[1], 
-    coords[2], 
-    coords[3], 
-    COGL_READ_PIXELS_COLOR_BUFFER,
-    COGL_PIXEL_FORMAT_RGBA_8888, 
-    (guchar *) pixels);
+//   cogl_read_pixels(
+//     coords[0], 
+//     coords[1], 
+//     width, 
+//     height, 
+//     COGL_READ_PIXELS_COLOR_BUFFER,
+//     COGL_PIXEL_FORMAT_RGBA_8888, 
+//     (guchar *) pixels);
 
-  CoglTexture * blur_texture = cogl_texture_new_from_data(
-    width, 
-    height,
-    COGL_TEXTURE_NONE,
-    COGL_PIXEL_FORMAT_RGBA_8888,
-    COGL_PIXEL_FORMAT_RGBA_8888,
-    0,
-    pixels
-  );
+//   CoglTexture * blur_texture = cogl_texture_new_from_data(
+//     width, 
+//     height,
+//     COGL_TEXTURE_NONE,
+//     COGL_PIXEL_FORMAT_RGBA_8888,
+//     COGL_PIXEL_FORMAT_RGBA_8888,
+//     0,
+//     pixels
+//   );
+
+//   blur_effect_init(self, ctx);
+//   blur_effect_pre_paint(self, blur_texture);
+//   blur_effect_paint_target(self);
   
-  blur_effect_init(self, ctx);
-  blur_effect_pre_paint(self, blur_texture);
-  blur_effect_paint_target(self);
-  
-  // return blur_texture;
-}
+//   // return blur_texture;
+// }
 
 static void
 paint_clipped_rectangle (CoglFramebuffer       *fb,
@@ -701,9 +704,6 @@ meta_shaped_texture_paint (ClutterActor *actor)
             {
               cairo_rectangle_int_t rect;
               cairo_region_get_rectangle (blended_region, i, &rect);
-
-              printf("rect: %d %d %d %d", rect.x, rect.y, rect.width, rect.height);
-              add_background_blur(stex, ctx, fb, &alloc, rect);
 
               if (!gdk_rectangle_intersect (&tex_rect, &rect, &rect))
                 continue;

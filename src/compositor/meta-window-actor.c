@@ -24,6 +24,7 @@
 #include "compositor-private.h"
 #include "meta-shaped-texture-private.h"
 #include "meta-shadow-factory-private.h"
+#include "meta-blur-factory.h"
 #include "meta-window-actor-private.h"
 #include "meta-texture-rectangle.h"
 #include "region-utils.h"
@@ -64,6 +65,7 @@ struct _MetaWindowActorPrivate
    */
   MetaShadow       *focused_shadow;
   MetaShadow       *unfocused_shadow;
+  MetaBlur         *blur;
 
   /* A region that matches the shape of the window, including frame bounds */
   cairo_region_t   *shape_region;
@@ -264,6 +266,7 @@ meta_window_actor_init (MetaWindowActor *self)
 						   META_TYPE_WINDOW_ACTOR,
 						   MetaWindowActorPrivate);
   priv->shadow_class = NULL;
+  priv->blur = make_blur();
 }
 
 static void
@@ -662,7 +665,7 @@ meta_window_actor_paint (ClutterActor *actor)
   MetaWindowActorPrivate *priv = self->priv;
   gboolean appears_focused = meta_window_appears_focused (priv->window);
   MetaShadow *shadow = appears_focused ? priv->focused_shadow : priv->unfocused_shadow;
-
+  Metablur *blur = priv->blur;
  /* This window got damage when obscured; we set up a timer
   * to send frame completion events, but since we're drawing
   * the window now (for some other reason) cancel the timer
@@ -705,6 +708,17 @@ meta_window_actor_paint (ClutterActor *actor)
                          (clutter_actor_get_paint_opacity (actor) * params.opacity * window->opacity) / (255 * 255),
                          clip,
                          clip_shadow_under_window (self)); /* clip_strictly - not just as an optimization */
+      meta_blur_paint(
+        blur,
+        params.x_offset + shape_bounds.x,
+        params.y_offset + shape_bounds.y,
+        shape_bounds.width,
+        shape_bounds.height,
+        255,
+        clip,
+        TRUE
+      );
+
 
       if (clip && clip != priv->shadow_clip)
         cairo_region_destroy (clip);
