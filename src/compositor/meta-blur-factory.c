@@ -30,8 +30,6 @@
 #include "meta-shadow-factory-private.h"
 #include "region-utils.h"
 
-typedef struct _MetaBlurCacheKey  MetaBlurCacheKey;
-typedef struct _MetaBlurClassInfo MetaBlurClassInfo;
 
 #define BLUR_PADDING    2
 static const gchar *box_blur_glsl_declarations =
@@ -74,31 +72,7 @@ struct _MetaBlur
 
 };
 
-struct _MetaBlurClassInfo
-{
-  const char *name; /* const so we can reuse for static definitions */
-  MetaBlurParams focused;
-  MetaBlurParams unfocused;
-};
-
-struct _MetaBlurFactory
-{
-  GObject parent_instance;
-
-  /* MetaBlurCacheKey => MetaBlur; the shadows are not referenced
-   * by the factory, they are simply removed from the table when freed */
-  GHashTable *shadows;
-
-  /* class name => MetaBlurClassInfo */
-  GHashTable *shadow_classes;
-};
-
-struct _MetaBlurFactoryClass
-{
-  GObjectClass parent_class;
-};
-
-G_DEFINE_TYPE (MetaBlurFactory, meta_blur_factory, G_TYPE_OBJECT);
+G_DEFINE_TYPE (MetaBlur, meta_blur, G_TYPE_OBJECT);
 
 void
 meta_blur_paint (MetaBlur          *self,

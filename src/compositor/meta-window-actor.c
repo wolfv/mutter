@@ -266,7 +266,6 @@ meta_window_actor_init (MetaWindowActor *self)
 						   META_TYPE_WINDOW_ACTOR,
 						   MetaWindowActorPrivate);
   priv->shadow_class = NULL;
-  priv->blur = make_blur();
 }
 
 static void
@@ -665,7 +664,7 @@ meta_window_actor_paint (ClutterActor *actor)
   MetaWindowActorPrivate *priv = self->priv;
   gboolean appears_focused = meta_window_appears_focused (priv->window);
   MetaShadow *shadow = appears_focused ? priv->focused_shadow : priv->unfocused_shadow;
-  Metablur *blur = priv->blur;
+  MetaBlur *blur = priv->blur;
  /* This window got damage when obscured; we set up a timer
   * to send frame completion events, but since we're drawing
   * the window now (for some other reason) cancel the timer

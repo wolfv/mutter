@@ -115,7 +115,9 @@ libmutter_la_SOURCES =				\
 	compositor/meta-plugin-manager.c	\
 	compositor/meta-plugin-manager.h	\
 	compositor/meta-shadow-factory.c	\
+	compositor/meta-blur-factory.c	\
 	compositor/meta-shadow-factory-private.h	\
+	compositor/meta-blur-factory.h	\
 	compositor/meta-shaped-texture.c	\
 	compositor/meta-shaped-texture-private.h 	\
 	compositor/meta-surface-actor.c		\
