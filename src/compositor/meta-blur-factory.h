@@ -7,6 +7,11 @@
 #include <meta/meta-shadow-factory.h>
 
 typedef struct _MetaBlur MetaBlur;
+typedef struct _MetaBlurClass MetaBlurClass;
+
+struct _MetaBlurClass {
+  
+};
 
 #define META_TYPE_BLUR                  (meta_blur_get_type ())
 #define META_BLUR(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), META_TYPE_BLUR, MetaBlur))

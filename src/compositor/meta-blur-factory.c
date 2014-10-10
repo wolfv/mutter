@@ -141,24 +141,11 @@ make_blur (MetaBlur *self)
 {
   ClutterBackend *backend = clutter_get_default_backend ();
   CoglContext *ctx = clutter_backend_get_cogl_context (backend);
-  cairo_rectangle_int_t extents;
-  guchar *buffer;
-  int buffer_width;
-  int buffer_height;
-  int x_offset;
-  int y_offset;
-  int n_rectangles, j, k;
   self->snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                           box_blur_glsl_declarations,
                           NULL);
   cogl_snippet_set_replace (self->snippet, box_blur_glsl_shader);
 
-  cairo_region_get_extents (region, &extents);
-
-  CoglContext *ctx =
-    clutter_backend_get_cogl_context (clutter_get_default_backend ());
-
   self->pipeline = cogl_pipeline_new (ctx);
   cogl_pipeline_add_layer_snippet (self->pipeline, 0, self->snippet);
-
 }
