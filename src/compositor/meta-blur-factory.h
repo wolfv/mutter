@@ -8,7 +8,14 @@
 
 typedef struct _MetaBlur MetaBlur;
 
-void make_blur(MetaBlur * blur);
+#define META_TYPE_BLUR                  (meta_blur_get_type ())
+#define META_BLUR(obj)                  (G_TYPE_CHECK_INSTANCE_CAST ((obj), META_TYPE_BLUR, MetaBlur))
+#define META_IS_BLUR(obj)               (G_TYPE_CHECK_INSTANCE_TYPE ((obj), META_TYPE_BLUR))
+#define META_BLUR_CLASS(klass)          (G_TYPE_CHECK_CLASS_CAST ((klass), META_TYPE_BLUR, MetaBlurClass))
+#define META_IS_BLUR_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE ((klass), META_TYPE_BLUR))
+#define META_BLUR_GET_CLASS(obj)        (G_TYPE_INSTANCE_GET_CLASS ((obj), META_TYPE_BLUR, MetaBlurClass))
+
+GType meta_blur_get_type();
 
 void        meta_blur_paint       (MetaBlur           *shadow,
                                      int                    window_x,
@@ -18,4 +25,4 @@ void        meta_blur_paint       (MetaBlur           *shadow,
                                      guint8                 opacity,
                                      cairo_region_t        *clip,
                                      gboolean               clip_strictly);
-#endif /* META_BACKGROUND_H */
+#endif
