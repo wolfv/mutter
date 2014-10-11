@@ -256,7 +256,7 @@ meta_blur_paint (MetaBlur          *self,
     window_width, 
     window_height, 
     COGL_READ_PIXELS_COLOR_BUFFER,
-    COGL_PIXEL_FORMAT_RGBA_8888, 
+    COGL_PIXEL_FORMAT_RGBA_8888_PRE,
     (guchar *) pixels);
   int i = 0;
   for(i = 0; i < window_width * window_height * 4; i += 4) {
@@ -266,9 +266,9 @@ meta_blur_paint (MetaBlur          *self,
   self->texture = cogl_texture_new_from_data(
     window_width, 
     window_height,
-    COGL_TEXTURE_NONE,
-    COGL_PIXEL_FORMAT_RGBA_8888,
-    COGL_PIXEL_FORMAT_RGBA_8888,
+    COGL_TEXTURE_NO_SLICING,
+    COGL_PIXEL_FORMAT_RGBA_8888_PRE,
+    COGL_PIXEL_FORMAT_RGBA_8888_PRE,
     0,
     pixels
   );
@@ -281,14 +281,14 @@ meta_blur_paint (MetaBlur          *self,
 
   self->tex_width = tex_width;
   self->tex_height = tex_height;
+  
+  // if (self->vertical_texture_dirty) {
+  //   cogl_framebuffer_draw_rectangle (self->vertical_fbo,
+  //                                    self->horizontal_pipeline,
+  //                                    -1.0f, 1.0f, 1.0f, -1.0f);
 
-  if (self->vertical_texture_dirty) {
-    cogl_framebuffer_draw_rectangle (self->vertical_fbo,
-                                     self->horizontal_pipeline,
-                                     -1.0f, 1.0f, 1.0f, -1.0f);
-
-    self->vertical_texture_dirty = FALSE;
-  }
+  //   self->vertical_texture_dirty = FALSE;
+  // }
 
   gint paint_opacity = 255;
   cogl_pipeline_set_color4ub (self->vertical_pipeline,
@@ -397,5 +397,9 @@ meta_blur_set_sigma_real (MetaBlur *self,
 
 static void meta_blur_init(MetaBlur * klass) {
     meta_blur_set_sigma_real (klass, 0.84089642f);
+    self->texture = cogl_texture_new_from_data(
+      0, 0, COGL_TEXTURE_NO_SLICING, COGL_PIXEL_FORMAT_RGBA_8888_PRE, COGL_PIXEL_FORMAT_RGBA_8888_PRE, 0, NULL);
+    );
+    meta_blur_post_paint(self);
 };
 
