@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "cogl-utils.h"
+#include "clutter-utils.h"
 #include "meta-blur-factory.h"
 #include "region-utils.h"
 
@@ -75,7 +76,7 @@ make_blur (MetaBlur *self)
   self->pipeline = cogl_pipeline_new (ctx);
   GString * shader;
   shader = g_string_new(NULL);
-  get_shader(6, shader);
+  get_shader(3, shader);
   CoglSnippet * snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                               box_blur_glsl_declarations,
                               NULL);
@@ -86,7 +87,6 @@ make_blur (MetaBlur *self)
   cogl_pipeline_set_layer_null_texture (self->pipeline,
                                         0, /* layer number */
                                         COGL_TEXTURE_TYPE_2D);
-
 }
 
 
@@ -109,10 +109,11 @@ meta_blur_paint (MetaBlur          *self,
 
   guchar * pixels;
   pixels = g_malloc0(window_width * window_height * 4);
-
+  gint xoffset, yoffset;
+  meta_actor_painting_untransformed(window_width, window_height, &xoffset, &yoffset)
   cogl_read_pixels(
-    window_x, 
-    window_y, 
+    window_x + xoffset, 
+    window_y + yoffset, 
     window_width, 
     window_height, 
     COGL_READ_PIXELS_COLOR_BUFFER,
@@ -129,7 +130,13 @@ meta_blur_paint (MetaBlur          *self,
     pixels
   );
 
+
   g_free(pixels);
+
+  opacity = 255;
+  cogl_pipeline_set_color4ub (self->pipeline,
+                              opacity, opacity, opacity, opacity);
+
   
   self->pixel_step_uniform =
     cogl_pipeline_get_uniform_location (self->pipeline, "pixel_step");
@@ -202,8 +209,6 @@ meta_blur_paint (MetaBlur          *self,
   cogl_pipeline_set_layer_texture(self->pipeline, 0, self->blur_tex2);
 
 
-  cogl_pipeline_set_color4ub (self->pipeline,
-                              opacity, opacity, opacity, opacity);
 
   // cogl_set_source (self->pipeline);
   cogl_push_source(self->pipeline);
