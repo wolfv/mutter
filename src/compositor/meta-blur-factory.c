@@ -11,23 +11,6 @@
 #define BLUR_PADDING    2
 static const gchar *box_blur_glsl_declarations =
 "uniform vec2 pixel_step;\n";
-#define SAMPLE(offx, offy) \
-  "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
-  "vec2 (" G_STRINGIFY (offx) ", " G_STRINGIFY (offy) "));\n"
-static const gchar *box_blur_glsl_shader =
-"  cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n"
-  SAMPLE (-1.0, -1.0)
-  SAMPLE ( 0.0, -1.0)
-  SAMPLE (+1.0, -1.0)
-  SAMPLE (-1.0,  0.0)
-  SAMPLE (+1.0,  0.0)
-  SAMPLE (-1.0, +1.0)
-  SAMPLE ( 0.0, +1.0)
-  SAMPLE (+1.0, +1.0)
-"  cogl_texel /= 9.0;\n";
-#undef SAMPLE
-
-//"
 
 struct _MetaBlur
 {
@@ -45,8 +28,33 @@ struct _MetaBlur
   gint pixel_step_uniform;
   CoglSnippet * snippet;
 
+  CoglFramebuffer *buffer_fb;
+  CoglTexture *blur_tex;
+  CoglFramebuffer *buffer_fb2;
+  CoglTexture *blur_tex2;
+
 };
 
+static void
+get_shader(gint radius, GString * shader) {
+    int i,j, total;
+    printf("shader");
+    g_string_append(shader, "cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n");
+    for(i = -radius + 1; i < radius; i++) {
+        for(j = -radius + 1; j < radius; j++) {
+            g_string_append_printf(shader,
+                "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
+                "vec2 ( %d, %d));\n",
+                i, j
+            );
+        }
+    }
+    total = (radius * 2 - 1) * (radius * 2 - 1);
+    g_string_append_printf(shader,
+        "cogl_texel /= %d;\n",
+        total
+    );
+}
 
 MetaBlur * 
 meta_blur_new(void) {
@@ -65,17 +73,23 @@ make_blur (MetaBlur *self)
   ClutterBackend *backend = clutter_get_default_backend ();
   CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   self->pipeline = cogl_pipeline_new (ctx);
-
+  GString * shader;
+  get_shader(6, shader);
   CoglSnippet * snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                               box_blur_glsl_declarations,
                               NULL);
-  cogl_snippet_set_replace (snippet, box_blur_glsl_shader);
+  cogl_snippet_set_replace (snippet, shader);
   cogl_pipeline_add_layer_snippet (self->pipeline, 0, snippet);
   cogl_object_unref (snippet);
 
   cogl_pipeline_set_layer_null_texture (self->pipeline,
                                         0, /* layer number */
                                         COGL_TEXTURE_TYPE_2D);
+
+  self->blur_tex = cogl_texture_2d_new_with_size(ctx, 16, 12);
+  self->buffer_fb = cogl_offscreen_new_with_texture(self->blur_tex);
+  self->blur_tex2 = cogl_texture_2d_new_with_size(ctx, 64, 48);
+  self->buffer_fb2 = cogl_offscreen_new_with_texture(self->blur_tex2);
 }
 
 
@@ -141,6 +155,21 @@ meta_blur_paint (MetaBlur          *self,
     }
 
   cogl_pipeline_set_layer_texture (self->pipeline, 0, self->texture);
+
+  cogl_framebuffer_draw_textured_rectangle(
+      self->buffer_fb,
+      self->pipeline,
+      -1, 1, 1, -1,
+      0, 0, 1, 1
+  );
+  cogl_pipeline_set_layer_texture(self->pipeline, 0, self->blur_tex);
+  cogl_framebuffer_draw_textured_rectangle(
+      self->buffer_fb2,
+      self->pipeline,
+      -1, 1, 1, -1,
+      0, 0, 1, 1
+  );
+  cogl_pipeline_set_layer_texture(self->pipeline, 0, self->blur_tex2);
 
 
   cogl_pipeline_set_color4ub (self->pipeline,
