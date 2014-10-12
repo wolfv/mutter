@@ -74,11 +74,12 @@ make_blur (MetaBlur *self)
   CoglContext *ctx = clutter_backend_get_cogl_context (backend);
   self->pipeline = cogl_pipeline_new (ctx);
   GString * shader;
+  shader = g_string_new(NULL);
   get_shader(6, shader);
   CoglSnippet * snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                               box_blur_glsl_declarations,
                               NULL);
-  cogl_snippet_set_replace (snippet, shader);
+  cogl_snippet_set_replace (snippet, shader->str);
   cogl_pipeline_add_layer_snippet (self->pipeline, 0, snippet);
   cogl_object_unref (snippet);
 
@@ -101,7 +102,7 @@ meta_blur_paint (MetaBlur          *self,
 {
   ClutterBackend *backend = clutter_get_default_backend ();
   CoglContext *ctx = clutter_backend_get_cogl_context (backend);
-  
+
   if(self->pipeline == NULL) {
     make_blur(self);
   }
