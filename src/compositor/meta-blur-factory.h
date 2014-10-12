@@ -31,4 +31,5 @@ void        meta_blur_paint       (MetaBlur           *shadow,
                                      guint8                 opacity,
                                      cairo_region_t        *clip,
                                      gboolean               clip_strictly);
+
 #endif
