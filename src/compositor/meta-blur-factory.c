@@ -99,6 +99,9 @@ meta_blur_paint (MetaBlur          *self,
                    cairo_region_t *clip,
                    gboolean        clip_strictly)
 {
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
+  
   if(self->pipeline == NULL) {
     make_blur(self);
   }
