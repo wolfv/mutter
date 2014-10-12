@@ -86,10 +86,6 @@ make_blur (MetaBlur *self)
                                         0, /* layer number */
                                         COGL_TEXTURE_TYPE_2D);
 
-  self->blur_tex = cogl_texture_2d_new_with_size(ctx, 16, 12);
-  self->buffer_fb = cogl_offscreen_new_with_texture(self->blur_tex);
-  self->blur_tex2 = cogl_texture_2d_new_with_size(ctx, 64, 48);
-  self->buffer_fb2 = cogl_offscreen_new_with_texture(self->blur_tex2);
 }
 
 
@@ -116,36 +112,38 @@ meta_blur_paint (MetaBlur          *self,
     window_width, 
     window_height, 
     COGL_READ_PIXELS_COLOR_BUFFER,
-    COGL_PIXEL_FORMAT_RGBA_8888, 
+    COGL_PIXEL_FORMAT_RGB_888, 
     (guchar *) pixels);
-  int i = 0;
-  for(i = 0; i < window_width * window_height * 4; i += 4) {
-    pixels[i] = 0;
-  }
-  
+
   self->texture = cogl_texture_new_from_data(
     window_width, 
     window_height,
     COGL_TEXTURE_NONE,
-    COGL_PIXEL_FORMAT_RGBA_8888,
-    COGL_PIXEL_FORMAT_RGBA_8888,
+    COGL_PIXEL_FORMAT_RGB_888,
+    COGL_PIXEL_FORMAT_RGB_888,
     0,
     pixels
   );
 
+  g_free(pixels);
+  
   self->pixel_step_uniform =
     cogl_pipeline_get_uniform_location (self->pipeline, "pixel_step");
 
   gint tex_width = cogl_texture_get_width (self->texture);
   gint tex_height = cogl_texture_get_height (self->texture);
 
+  self->blur_tex = cogl_texture_2d_new_with_size(ctx, tex_width / 10, tex_height / 10);
+  self->buffer_fb = cogl_offscreen_new_with_texture(self->blur_tex);
+  self->blur_tex2 = cogl_texture_2d_new_with_size(ctx, tex_width / 5, tex_height / 5);
+  self->buffer_fb2 = cogl_offscreen_new_with_texture(self->blur_tex2);
 
   if(self->pixel_step_uniform > -1) {
 
       gfloat pixel_step[2];
 
-      pixel_step[0] = 1.0f / tex_width;
-      pixel_step[1] = 1.0f / tex_height;
+      pixel_step[0] = 1.0f / (tex_width / 10);
+      pixel_step[1] = 1.0f / (tex_height / 10);
 
       cogl_pipeline_set_uniform_float (self->pipeline,
                                        self->pixel_step_uniform,
@@ -162,6 +160,20 @@ meta_blur_paint (MetaBlur          *self,
       -1, 1, 1, -1,
       0, 0, 1, 1
   );
+  if(self->pixel_step_uniform > -1) {
+
+      gfloat pixel_step[2];
+
+      pixel_step[0] = 1.0f / (tex_width / 5);
+      pixel_step[1] = 1.0f / (tex_height / 5);
+
+      cogl_pipeline_set_uniform_float (self->pipeline,
+                                       self->pixel_step_uniform,
+                                       2, /* n_components */
+                                       1, /* count */
+                                       pixel_step);
+    }
+
   cogl_pipeline_set_layer_texture(self->pipeline, 0, self->blur_tex);
   cogl_framebuffer_draw_textured_rectangle(
       self->buffer_fb2,
@@ -169,6 +181,20 @@ meta_blur_paint (MetaBlur          *self,
       -1, 1, 1, -1,
       0, 0, 1, 1
   );
+  if(self->pixel_step_uniform > -1) {
+
+      gfloat pixel_step[2];
+
+      pixel_step[0] = 1.0f / (tex_width / 1);
+      pixel_step[1] = 1.0f / (tex_height / 1);
+
+      cogl_pipeline_set_uniform_float (self->pipeline,
+                                       self->pixel_step_uniform,
+                                       2, /* n_components */
+                                       1, /* count */
+                                       pixel_step);
+  }
+
   cogl_pipeline_set_layer_texture(self->pipeline, 0, self->blur_tex2);
 
 
@@ -179,6 +205,11 @@ meta_blur_paint (MetaBlur          *self,
   cogl_push_source(self->pipeline);
   cogl_rectangle (0, 0, window_width, window_height);
   cogl_pop_source();
+  g_free(self->texture);
+  g_free(self->blur_tex);
+  g_free(self->buffer_fb); 
+  g_free(self->blur_tex2);
+  g_free(self->buffer_fb2);
   // cogl_rectangle_with_texture_coords (window_x, window_y, );
 }
 
