@@ -37,20 +37,26 @@ struct _MetaBlur
 };
 
 static void
-get_shader(gint radius, GString * shader) {
+get_shader(gint radius, GString * shader, gboolean horizontal) {
     int i,j, total;
     printf("shader");
     g_string_append(shader, "cogl_texel = texture2D (cogl_sampler, cogl_tex_coord.st);\n");
     for(i = -radius + 1; i < radius; i++) {
-        for(j = -radius + 1; j < radius; j++) {
+        if(horizontal) {
             g_string_append_printf(shader,
                 "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
                 "vec2 ( %d, %d));\n",
-                i, j
+                i, 0
+            );
+        } else {
+            g_string_append_printf(shader,
+                "cogl_texel += texture2D (cogl_sampler, cogl_tex_coord.st + pixel_step * " \
+                "vec2 ( %d, %d));\n",
+                0, i
             );
         }
     }
-    total = (radius * 2 - 1) * (radius * 2 - 1);
+    total = (radius * 2 - 1);
     g_string_append_printf(shader,
         "cogl_texel /= %d;\n",
         total
@@ -76,7 +82,7 @@ make_blur (MetaBlur *self)
   self->pipeline = cogl_pipeline_new (ctx);
   GString * shader;
   shader = g_string_new(NULL);
-  get_shader(3, shader);
+  get_shader(4, shader);
   CoglSnippet * snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
                               box_blur_glsl_declarations,
                               NULL);
@@ -117,7 +123,7 @@ meta_blur_paint (MetaBlur          *self,
     window_width, 
     window_height, 
     COGL_READ_PIXELS_COLOR_BUFFER,
-    COGL_PIXEL_FORMAT_RGB_888, 
+    COGL_PIXEL_FORMAT_BGR_888, 
     (guchar *) pixels);
 
   self->texture = cogl_texture_new_from_data(
@@ -129,7 +135,6 @@ meta_blur_paint (MetaBlur          *self,
     0,
     pixels
   );
-
 
   g_free(pixels);
 
@@ -171,6 +176,7 @@ meta_blur_paint (MetaBlur          *self,
       -1, 1, 1, -1,
       0, 0, 1, 1
   );
+
   if(self->pixel_step_uniform > -1) {
 
       gfloat pixel_step[2];
@@ -189,7 +195,7 @@ meta_blur_paint (MetaBlur          *self,
   cogl_framebuffer_draw_textured_rectangle(
       self->buffer_fb2,
       self->pipeline,
-      -1, 1, 1, -1,
+      -1, 1, -1, 1,
       0, 0, 1, 1
   );
   if(self->pixel_step_uniform > -1) {
@@ -214,11 +220,11 @@ meta_blur_paint (MetaBlur          *self,
   cogl_push_source(self->pipeline);
   cogl_rectangle (0, 0, window_width, window_height);
   cogl_pop_source();
-  g_free(self->texture);
-  g_free(self->blur_tex);
-  g_free(self->buffer_fb); 
-  g_free(self->blur_tex2);
-  g_free(self->buffer_fb2);
+  // g_free(self->texture);
+  // g_free(self->blur_tex);
+  // g_free(self->buffer_fb); 
+  // g_free(self->blur_tex2);
+  // g_free(self->buffer_fb2);
   // cogl_rectangle_with_texture_coords (window_x, window_y, );
 }
 
